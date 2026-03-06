@@ -1,37 +1,31 @@
 <template>
   <div class="water-warp">
-    <div class="column" v-for="columnItem in columns" :key="columnItem.index">
-      <div class="column-item" v-for="item in columnItem" :key="item.index">
+    <div class="tags">
+      <span
+        v-for="(item, index) in tags"
+        :key="item.value"
+        :style="tagActive == index ? 'color:#0088f5;' : ''"
+        @click="changeTag(index)"
+        >{{ item.label }}</span
+      >
+    </div>
+    <div class="column">
+      <div class="column-item" v-for="item in lists" :key="item.index">
         <div
           class="column-item-card-1 column-item-gaid"
-          v-show="item.cardType == 1"
+          @click="toDetail(item)"
         >
           <div class="type-1">
-            <span class="iconfont icon-rongqi Icon"></span>/ {{item.tag}}
+            <span class="iconfont icon-lianjie Icon"></span>{{ item.tag }}
           </div>
-          <img
-            :src="item.coverBg"
-            alt=""
-          />
-          <div class="title">{{item.title}}</div>
-          <div class="des" @click="toDetail(item)">查看详情↓</div>
-        </div>
-        <div
-          class="column-item-card-2 column-item-gaid"
-          v-show="item.cardType == 2"
-        >
-          <div class="type-2">
-            <span class="iconfont icon-rongqi Icon"></span>/ {{item.tag}}
-          </div>
-          <img
-            :src="item.coverBg"
-            alt=""
-          />
-          <div class="title">{{item.title}}</div>
-          <div class="des" @click="toDetail(item)">查看详情↓</div>
+          <img v-if="item.coverBg" class="coverBg" :src="item.coverBg" alt="" />
+          <div class="title">{{ item.title }}</div>
+          <div class="des">查看详情↓</div>
         </div>
       </div>
     </div>
+
+    <div class="loading" v-if="loading">加载中...</div>
   </div>
 </template>
 <script>
@@ -39,11 +33,27 @@ import { queryWorks } from "@/api/home.js";
 export default {
   data() {
     return {
-      currentPage: 1,
-      columnHeight: [0, 0, 0],
-      cardType: 0, //
       lists: [],
-      columns: [[], [], []],
+      tagActive: 0,
+      tags: [
+        {
+          value: "0",
+          label: "大屏",
+        },
+        {
+          value: "1",
+          label: "后台管理系统",
+        },
+        {
+          value: "2",
+          label: "小程序",
+        },
+        {
+          value: "3",
+          label: "自研",
+        },
+      ],
+      loading: false,
     };
   },
   components: {},
@@ -52,20 +62,23 @@ export default {
     window.addEventListener("scroll", this.handleScroll);
   },
   methods: {
+    changeTag(tag) {
+      this.tagActive = tag;
+      this.queryWorks();
+    },
     queryWorks() {
-      let msg = JSON.stringify({
-        pageSize: "10",
-        currentPage: this.currentPage,
-      });
-      queryWorks(msg).then((res) => {
+      const tag = this.tags[this.tagActive].label;
+      let params = {
+        tag: tag,
+      };
+      queryWorks(params).then((res) => {
         if (res.code == 200) {
           let data = res.data.rows;
           this.lists = data;
-          this.initWater();
         }
       });
     },
-    toDetail(item){
+    toDetail(item) {
       // 跳转
       let openUrl = this.$router.resolve({
         path: "/developDetail?id=" + item.id,
@@ -98,17 +111,23 @@ export default {
       if (scrollTop + innerHeight >= scrollHeight) {
         this.currentPage += 1;
         let msg = JSON.stringify({
-          pageSize: "10",
+          pageSize: "20",
           currentPage: this.currentPage,
         });
+        this.loading = true;
         queryWorks(msg).then((res) => {
           if (res.code == 200) {
             let data = res.data.rows;
-            this.lists = this.lists.concat(data)
-            if(data.length>0){
+            this.loading = false;
+            // this.lists = this.lists.concat(data)
+            if (data.length > 0) {
+              this.columns = [[], [], []];
+              this.columnHeight = [0, 0, 0];
+              data.forEach((item) => {
+                this.lists.push(item);
+              });
               this.initWater();
             }
-            
           }
         });
       }
@@ -119,39 +138,45 @@ export default {
 <style lang="scss" scoped>
 .water-warp {
   width: 100%;
-  display: flex;
-  flex-direction: row;
+  .tags {
+    width: 100%;
+    background-color: #fff;
+    line-height: 36px;
+    color: #333333;
+    padding: 5px;
+    box-sizing: border-box;
+    cursor: pointer;
+    span {
+      display: inline-block;
+      margin-left: 15px;
+      margin-right: 15px;
+    }
+  }
+  .loading {
+    width: 100%;
+    height: 50px;
+    position: fixed;
+    font-size: 12px;
+  }
   .column {
-    flex-grow: 1;
-    flex-basis: 0;
-    padding-left: 10px;
-    padding-right: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-top: 10px;
     .column-item {
+      width: 286.6px;
       background-color: #fff;
       border-radius: 4px;
       .column-item-card-1 {
         height: 280px;
-        img {
-          width: 240px;
-          height: auto;
+        overflow: hidden;
+        .coverBg{
+          height: 140px;
+          width: auto;
           margin: 10px 0;
         }
-      }
-      .column-item-card-2 {
-        height: 620px;
-        img {
-          width: 200px;
-          height: auto;
-          margin: 10px 0;
-        }
-      }
-      .column-item-gaid {
-        margin-bottom: 10px;
-        padding: 5px 10px;
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        align-items: center;
       }
       .type-1 {
         width: 100%;
@@ -159,24 +184,12 @@ export default {
         height: 40px;
         line-height: 40px;
         font-size: 14px;
-        color: #0088f5;
-        font-weight: 550;
+        color: #333333;
         span {
-          margin-right: 10px;
+          margin-right: 4px;
         }
       }
-      .type-2 {
-        width: 100%;
-        text-align: left;
-        height: 40px;
-        line-height: 40px;
-        font-size: 14px;
-        color: #fd7515;
-        font-weight: 550;
-        span {
-          margin-right: 10px;
-        }
-      }
+
       .title {
         width: 100%;
         text-align: center;
@@ -191,10 +204,9 @@ export default {
         text-align: center;
         height: 30px;
         line-height: 30px;
-        font-size: 14px;
+        font-size: 12px;
         color: #666666;
         cursor: pointer;
-        text-decoration: underline;
       }
     }
   }

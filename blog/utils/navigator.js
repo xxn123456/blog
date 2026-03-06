@@ -10,15 +10,10 @@ export function detectDevice() {
     )
 
     if (mobile) {
-        window.location.href = '/phone'
+        alert('此站点是pc端网页，使用电脑浏览更佳,点击确认后继续浏览')
         return 'mobile'
-        // 如果userAgent包含上述关键字之一，则认为是在移动设备上
-        console.log('访问设备是移动设备')
     } else {
-
         return 'pc'
-        // 否则，认为是在PC（桌面设备）上
-        console.log('访问设备是PC（桌面设备）')
 
     }
 

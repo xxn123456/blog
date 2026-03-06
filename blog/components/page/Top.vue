@@ -1,7 +1,7 @@
 
 <template>
   <div class="head-cont">
-    <div class="logo">
+    <div class="logo" @click="tohome">
       <img src="@/static/layout/logo.jpg" alt="" />
       <span>久别的博客</span>
     </div>
@@ -48,6 +48,10 @@ export default {
     this.queryWebSet();
   },
   methods: {
+    tohome(){
+      const origin = window.location.origin;
+      window.location.replace(origin);
+    },
     queryWebSet() {
       let msg = JSON.stringify({
         name: "bg-music",
@@ -63,7 +67,6 @@ export default {
         }
       });
     },
-    defaltOpen() {},
     prev() {
       console.log("设置上一曲")
       this.bgIndex = this.bgIndex - 1;
@@ -105,13 +108,10 @@ export default {
 </script>
 <style lang="scss" scoped>
 .head-cont {
-  width: 100%;
+  width: 1020px;
   height: 100%;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 15px;
+  padding-right: 15px;
   .logo {
     width: 406px;
     height: 100%;
@@ -119,6 +119,8 @@ export default {
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
+    float: left;
+    cursor: pointer;
 
     img {
       height: 30px;
@@ -134,6 +136,7 @@ export default {
     }
   }
   .player {
+    width: 300px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -143,6 +146,7 @@ export default {
     opacity: 0.8;
     cursor: pointer;
     position: relative;
+    float: right;
     .handle-btns {
       height: 22px;
       display: flex;
@@ -157,6 +161,7 @@ export default {
       width: 100%;
       height: 16px;
       font-size: 12px;
+      text-align: right;
     }
     .play-controls {
       position: absolute;

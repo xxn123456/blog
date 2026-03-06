@@ -29,15 +29,17 @@
 </template>
 <script>
 import LeftNav from "@/components/page/LeftNav.vue";
-import WebTop from "@/components/page/Top.vue";;
+import WebTop from "@/components/page/Top.vue";
 import ArticlePage from "@/components/base/ArticlePage.vue";
 import WebFoot from "@/components/page/Foot.vue";
 import Toop from "@/components/base/Tool.vue";
-import WaterfallPage from '@/components/base/WaterfallPage.vue'
-import {mapState,mapActions} from "vuex";
+import WaterfallPage from "@/components/base/WaterfallPage.vue";
+import { mapState, mapActions } from "vuex";
+import { detectDevice } from "@/utils/navigator.js";
 export default {
   data() {
     return {
+      web: "",
       canRun: true,
     };
   },
@@ -52,7 +54,7 @@ export default {
     ArticlePage,
     Toop,
     WaterfallPage,
-    WebFoot
+    WebFoot,
   },
   mounted() {
     this.getScroll();
@@ -81,11 +83,12 @@ export default {
 </script>
 <style lang="scss" scoped>
 .home {
+  width: 100%;
   min-width: 1050px;
   position: relative;
   background-color: rgba(238, 238, 238, 0.5);
   .head {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
@@ -97,17 +100,19 @@ export default {
     -ms-user-select: none;
     user-select: none;
     .head-cont {
-      width: 1050px;
+      width: 1080px;
       height: 100%;
       margin: 0 auto;
     }
   }
   .cont-wrap {
-    width: 1050px;
+    width: 1080px;
     height: auto;
     margin: 0 auto;
+    padding-left: 15px;
+    padding-right: 15px;
     .cont {
-      padding-top: 74px;
+      padding-top: 10px;
       width: 1050px;
       margin: 0 auto;
       display: flex;
@@ -115,7 +120,7 @@ export default {
       justify-content: space-between;
       .artice {
         width: 100%;
-        
+
         .my-swiper {
           width: 100%;
           height: 200px;
@@ -135,11 +140,10 @@ export default {
         margin-left: 10px;
         min-height: 800px;
         margin-bottom: 100px;
-        
       }
       .msg-btns {
         position: fixed;
-        margin-left: 1100px;
+        right: 300px;
         bottom: 180px;
       }
     }
@@ -147,8 +151,10 @@ export default {
   .cont-wrap::-webkit-scrollbar {
     display: none;
   }
+
   .foot {
     height: 70px;
+    margin-top: 10px;
     background-color: #fff;
     top: 0px;
     left: 0px;

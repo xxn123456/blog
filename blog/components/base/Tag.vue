@@ -12,15 +12,13 @@ import { queryWebSet } from "@/api/home.js";
 export default {
   data() {
     return {
-      artTags: [
-      
-      ],
+      artTags: [],
     };
   },
-  mounted(){
-    this.queryWebSet()
+  mounted() {
+    this.queryWebSet();
   },
-  methods:{
+  methods: {
     queryWebSet() {
       let msg = JSON.stringify({
         name: "artilce-tag",
@@ -34,25 +32,22 @@ export default {
         }
       });
     },
-    selectPoint(value){
-      this.$emit("selectPoint",value)
-    }
-  }
+    selectPoint(value) {
+      this.$emit("selectPoint", value);
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
 .art-tags {
-  width: 100%;
   height: 100%;
   padding: 10px;
   background-color: #fff;
   cursor: pointer;
-
   .art-tag {
     display: inline-flex;
     margin-bottom: 10px;
     margin-right: 8px;
-
     .pic {
       width: 24px;
       height: 24px;
@@ -62,7 +57,6 @@ export default {
       align-items: center;
       justify-content: center;
     }
-
     .des {
       font-size: 12px;
       height: 24px;

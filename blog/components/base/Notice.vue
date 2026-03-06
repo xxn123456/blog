@@ -3,10 +3,13 @@
     <div class="ad">
       <span class="iconfont Icon icon-shengyin"></span>
       <swiper :options="swiperOption" ref="mySwiper" class="my-swiper">
-        <swiper-slide class="swiper-item" v-for="item in lists" :key="item.index">
-          {{item.cont}}
-         </swiper-slide
+        <swiper-slide
+          class="swiper-item"
+          v-for="item in lists"
+          :key="item.index"
         >
+          {{ item.cont }}
+        </swiper-slide>
       </swiper>
     </div>
   </client-only>
@@ -58,9 +61,8 @@ export default {
 </script>
 <style lang="scss" scoped>
 .ad {
-  width: 100%;
-  padding-left: 30px;
-  padding-right: 30px;
+  padding-left: 15px;
+  padding-right: 15px;
   height: 40px;
   line-height: 40px;
   background-color: #fff;
@@ -68,9 +70,8 @@ export default {
   color: #666666;
   display: flex;
   flex-direction: row;
-
+  border-radius: 2px;
   .my-swiper {
-    width: calc(100% - 10px);
     height: 40px;
     margin-left: 8px;
   }

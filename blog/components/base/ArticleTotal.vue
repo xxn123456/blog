@@ -1,44 +1,55 @@
 <template>
   <div class="article-total">
-    <div class="num" v-if="articleTotal != '-'">
-      <span class="target">{{articleTotal}}</span>
+    <div class="num">
+      <span class="target">{{ asy.当前栏目下文章总数 }}</span>
       <span class="target-des">文章数量</span>
     </div>
-    <div class="article-num-skeion" v-else></div>
     <div class="separator">|</div>
     <div class="num">
-      <span class="target">-</span>
-      <span class="target-des">点击次数</span>
+      <span class="target">{{ asy.当前栏目下访客总数 }}</span>
+      <span class="target-des">浏览次数</span>
     </div>
     <div class="separator">|</div>
     <div class="num">
-      <span class="target">-</span>
+      <span class="target">{{ asy.当前栏目下评论总数 }}</span>
       <span class="target-des">全站评论</span>
     </div>
   </div>
 </template>
 <script>
-import { mapState } from "vuex";
+import { getBlogAsy } from "@/api/home.js";
 export default {
   data() {
     return {
-
+      asy: {
+        当前栏目下文章总数: "-",
+        当前栏目下访客总数: "-",
+        当前栏目下评论总数: "-",
+      },
     };
   },
   computed: {
-    ...mapState({
-      articleTotal: (state) => state.blog.article.total,
-    })
+    blogStore() {
+      return this.$store.state.blog;
+    },
   },
-  methods: {},
+  methods: {
+    getBlogAsy() {
+      let params = {};
+      if (this.blogStore.leftNav != 1) {
+        params.navTypeId = this.blogStore.leftNav;
+      }
+      getBlogAsy(params).then((res) => {
+        let { code, data } = res;
+        if (code == 200) {
+          this.asy = data;
+        }
+      });
+    },
+  },
 };
 </script>
 <style lang="scss" scoped>
-@keyframes loading {
-  to {
-    background-position-x: -20%;
-  }
-}
 .article-total {
   width: 100%;
   height: 70px;

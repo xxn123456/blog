@@ -5,18 +5,18 @@ export default {
   },
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    title: 'blog',
+    title: '久别的博客，微信shutiao9527',
     htmlAttrs: {
       lang: 'en'
     },
     meta: [
       { charset: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { hid: 'description', name: 'description', content: '' },
+      { hid: 'description', name: 'description', content: '久别的博客，微信shutiao9527' },
       { name: 'format-detection', content: 'telephone=no' }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: 'http://upload.shutiaogege.top/logo/favicon.ico' }
     ]
   },
 
@@ -39,7 +39,12 @@ export default {
     {
       src: '~plugins/swiper.js',
       ssr: false
+    },
+    {
+      src: '~plugins/day.js',
+      ssr: false
     }
+
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

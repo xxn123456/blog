@@ -48,7 +48,7 @@ export default {
         autoplay: {
           delay: 2000,
           disableOnInteraction: false,
-        }
+        },
       },
       activeIot: 0,
     };
@@ -59,16 +59,15 @@ export default {
     },
   },
   mounted() {
-    setTimeout(()=>{
+    setTimeout(() => {
       this.get_Carousel();
-    },300)
+    }, 300);
   },
   computed: {
     swiperDom() {
       return this.$refs.mySwiper.swiper;
-    }
+    },
   },
-
   methods: {
     get_Carousel() {
       let msg = JSON.stringify({
@@ -88,30 +87,19 @@ export default {
   },
 };
 </script>
-
 <style lang="scss" scoped>
-@keyframes loading {
-  to {
-    background-position-x: -20%;
-  }
-}
 .carousel-wrapper {
   width: 100%;
-
   height: 200px;
   overflow: hidden;
-
   position: relative;
-
   .my-swiper {
     width: 100%;
     height: 200px;
-
     .swiper-item > img {
       width: 100%;
       height: 200px;
     }
-
     .swiper-item > .subtitle {
       position: absolute;
       top: 25px;
@@ -153,7 +141,6 @@ export default {
     align-items: center;
     .iot {
       background-color: rgba(238, 238, 238, 0.5);
-
       width: 10px;
       height: 10px;
       display: inline-block;
@@ -162,7 +149,6 @@ export default {
     }
     .iotActive {
       background-color: rgba(238, 238, 238, 0.5);
-
       width: 30px;
       height: 10px;
       display: inline-block;
@@ -184,8 +170,7 @@ export default {
     )
     #ededed;
   background-size: 200% 100%;
-            background-position-x: 180%;
-            animation: 0.5s loading ease-in-out infinite;
-            
+  background-position-x: 180%;
+  animation: 0.5s loading ease-in-out infinite;
 }
 </style>

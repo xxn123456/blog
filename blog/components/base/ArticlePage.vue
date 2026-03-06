@@ -7,7 +7,7 @@
           <a @click="to_detail(item, index)" class="to-detail">
             <div class="list-item">
               <div class="pic">
-                <img :src="item.book | handleEmtyImg" alt="" />
+                <img :src="item.book" alt="" />
               </div>
               <div class="cont">
                 <div class="title">
@@ -36,7 +36,7 @@
                       class="iconfont icon-xiaoxi"
                       style="font-size: 12px"
                     ></span>
-                    <span class="des">0</span>
+                    <span class="des">{{item.replyNum}}</span>
                   </div>
                   <div class="other-lable">
                     <span
@@ -59,7 +59,6 @@
           </a>
         </li>
       </ul>
-
       <ul class="load-list" v-else>
         <li v-for="item in articles" :key="item.index">
           <a class="to-detail">
@@ -74,7 +73,6 @@
         </li>
       </ul>
     </div>
-
     <div class="page-nav">
       <div class="prev">
         <span class="go-nav">
@@ -87,14 +85,17 @@
   </div>
 </template>
 <script>
-import { getBlogList,updataBlogSee } from "@/api/home.js";
-import { mapState,mapMutations} from "vuex";
+import { getBlogList, updataBlogSee } from "@/api/home.js";
 export default {
-  props:{
-    pageSize:{
-      type:Number,
-      default:5
-    }
+  props: {
+    about: {
+      type: String,
+      default: null,
+    },
+    pageSize: {
+      type: Number,
+      default: 5,
+    },
   },
   data() {
     return {
@@ -106,38 +107,64 @@ export default {
     };
   },
   computed: {
-    ...mapState({
-      cateNameId: (state) => state.blog.cateNameId,
-    }),
-    activeLeft() {
-      return this.$store.state.blog.leftNav;
-    },
-  },
-  mounted() {
-    setTimeout(() => {
-      this.get_Blog();
-    }, 300);
-  },
-  filters: {
-    handleEmtyImg(val) {
-      if (val == "/images/book/article-pic.png" || !val) {
-        return require("@/static/error/404.jpeg");
-      } else {
-        return val;
-      }
+    blogStore() {
+      return this.$store.state.blog;
     },
   },
   methods: {
-    ...mapMutations({
-      setTotal: "blog/SETARTICLETOTAL",
-    }),
-    prev() {
-      this.page -= 1;
-      this.get_Blog();
-    },
-    next() {
-      this.page += 1;
-      this.get_Blog();
+    async getBlog() {
+      this.load = true;
+      let params = {
+        currentPage: this.page,
+        pageSize: 5,
+        title: this.about,
+      };
+      if (this.blogStore.leftNav != 1) {
+        params.navTypeId = this.blogStore.leftNav;
+      }
+      let res = await getBlogList(params);
+      let { code, data } = res;
+      if (code == "200") {
+        if (data.rows && data.rows.length != 0) {
+          this.total = data.count;
+          this.articles = data.rows.map((el, index) => {
+            let new_subTitle = "未配置详情";
+            if (el.content) {
+              new_subTitle =
+                el.content.length > 80
+                  ? el.content.substring(0, 80) + "..."
+                  : el.content;
+            }
+            let new_categname = "暂未归类";
+            if (el.navType && el.navType.categoryName) {
+              new_categname = el.navType.categoryName;
+            }
+            if (!el.book) {
+              el.book = require("@/static/error/404.jpeg");
+            }
+            return {
+              id: el.id,
+              title: el.title,
+              book: el.book,
+              subTitle: new_subTitle,
+              createdAt: el.createdAt,
+              visitNum: el.visitNum,
+              replyNum: el.reply.length,
+              categoryName: new_categname,
+            };
+          });
+          if (this.articles.length > 0) {
+            this.emty = false;
+          }
+          document.documentElement.scrollTop = 0;
+          setTimeout(() => {
+            this.load = false;
+          }, 500);
+        } else {
+          this.emty = true;
+          this.articles = [];
+        }
+      }
     },
     to_detail(item, index) {
       // 更新访问量
@@ -149,69 +176,23 @@ export default {
           this.articles[index].visitNum = item.visitNum + 1;
         }
       });
-      // 跳转
-      let openUrl = this.$router.resolve({
-        path: "/detail?id=" + item.id,
-      });
-      window.open(openUrl.href, "_blank");
+      const origin = window.location.origin;
+      const openUrl = `${origin}/detail?id=${item.id}`;
+      window.open(openUrl, "_blank");
     },
-    async get_Blog() {
-      let msg = {
-        currentPage: this.page,
-        pageSize: 5,
-      };
-      if (this.activeLeft != 1) {
-        msg.categoryId = this.activeLeft;
+    prev() {
+      if (this.page <= 1) {
+        return;
       }
-      if (this.$route.query.about) {
-        msg.title = this.$route.query.about;
+      this.page -= 1;
+      this.getBlog();
+    },
+    next() {
+      if (this.page * this.pageSize > this.total) {
+        return;
       }
-      this.load = true;
-      let res = await getBlogList(JSON.stringify(msg));
-    
-      let { code, data } = res;
-      if (code == "200") {
-        setTimeout(() => {
-          this.load = false;
-        }, 500);
-        if (data.rows.length != 0) {
-          let blogs = data.rows;
-          this.total = data.count;
-          this.setTotal(data.count)
-          this.articles = blogs.map((el, index) => {
-            let new_subTitle =
-              el.content.length > 80
-                ? el.content.substring(0, 80) + "    详情"
-                : el.content;
-
-            let new_categname;
-
-            if (el.articleType == null) {
-              new_categname = "暂未归类";
-            } else {
-              new_categname = el.articleType.categoryName;
-            }
-            return {
-              id: el.id,
-              title: el.title,
-              book: el.book,
-              subTitle: new_subTitle,
-              createdAt: el.createdAt,
-              visitNum: el.visitNum,
-              categoryName: new_categname,
-            };
-          });
-
-          if (this.articles.length > 0) {
-            this.emty = false;
-          }
-
-          document.documentElement.scrollTop = 0;
-        } else {
-          this.emty = true;
-          this.articles = [];
-        }
-      }
+      this.page += 1;
+      this.getBlog();
     },
   },
 };
@@ -219,7 +200,7 @@ export default {
 <style lang="scss" scoped>
 .article {
   width: 100%;
-
+  overflow: hidden;
   .emty {
     width: 100%;
     height: 100px;
@@ -229,11 +210,11 @@ export default {
     justify-content: center;
     align-items: center;
     background-color: #fff;
-    margin-top: 10px;
     color: #666666;
   }
 
   .article-list {
+    width: 100%;
     .has-list {
       padding-left: 0px;
       li {
@@ -245,12 +226,12 @@ export default {
 
           .list-item {
             width: 100%;
-            height: 134px;
+            height: 117px;
             display: flex;
             flex-direction: row;
             padding: 8px;
             background-color: #fff;
-            margin-top: 16px;
+            margin-bottom: 16px;
             border-radius: 4px;
 
             .pic {
@@ -267,7 +248,7 @@ export default {
             }
 
             .cont {
-              width: calc(100% - 176px);
+              width: calc(100% - 186px);
               height: 117px;
 
               .title {
@@ -287,15 +268,12 @@ export default {
               }
 
               .other {
-                width: 100%;
-
                 padding-right: 10px;
                 height: 22px;
                 line-height: 22px;
                 display: flex;
                 flex-direction: row;
                 justify-content: space-between;
-
                 align-items: center;
                 font-size: 12px;
                 color: #666666;
@@ -324,13 +302,12 @@ export default {
 
           .list-item {
             width: 100%;
-            height: 134px;
+            height: 117px;
             display: flex;
             flex-direction: row;
             padding: 8px;
             background-color: #f8f8f8;
-            margin-top: 16px;
-
+            margin-bottom: 16px;
             .pic {
               width: 166px;
               height: 117px;
@@ -358,7 +335,7 @@ export default {
             }
 
             .cont {
-              width: calc(100% - 176px);
+              width: calc(100% - 186px);
               height: 117px;
               display: flex;
               flex-direction: column;
@@ -406,8 +383,6 @@ export default {
               }
 
               .other {
-                width: 100%;
-
                 padding-right: 10px;
                 height: 22px;
                 line-height: 22px;

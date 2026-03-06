@@ -7,7 +7,7 @@
     </div>
     <div class="cont-wrap">
       <div class="cont">
-        <detail-main :blog="blog"></detail-main>
+        <detail-main></detail-main>
       </div>
     </div>
     <div class="foot">
@@ -20,26 +20,19 @@ import DetailMain from "@/components/content/ArticleDetail.vue";
 import WebTop from "@/components/page/Top.vue";
 import WebFoot from "@/components/page/Foot.vue";
 import { mapActions } from "vuex";
-import { getBlogDetail } from "@/api/home.js";
 export default {
   data() {
     return {
-      canRun: true,
-      blogId: this.$route.query.id,
-      blog: {
-        title: "文章标题",
-        content: "",
-      },
+      canRun: true
     };
   },
   components: {
     WebTop,
     WebFoot,
-    DetailMain
+    DetailMain,
   },
   mounted() {
     this.getScroll();
-    this.get_BlogDetail();
   },
   methods: {
     ...mapActions({
@@ -58,50 +51,42 @@ export default {
           this.canRun = true;
         }, 500);
       });
-    },
-    get_BlogDetail() {
-      let msg = JSON.stringify({
-        id: this.blogId,
-      });
-      getBlogDetail(msg).then((res) => {
-        let { code, data } = res;
-        if (code == "200") {
-          this.blog = data;
-        }
-      });
-    },
+    }
   },
 };
 </script>
 
 <style lang="scss" scoped>
 .home {
-  min-width: 1050px;
+  width: 100%;
+  min-height: 100vh;
+  padding-bottom: 80px;
   position: relative;
+  background-color: rgba(238, 238, 238, 0.5);
   .head {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
     height: 60px;
     z-index: 999;
     background: #fff;
-
     .head-cont {
-      width: 1050px;
+      width: 1080px;
       height: 100%;
       margin: 0 auto;
     }
   }
-
   .cont-wrap {
-    width: 100%;
+    width: 1050px;
+    margin: 0 auto;
+    text-align: center;
     height: auto;
-    background-color: rgba(238, 238, 238, 0.5);
-
+    position: relative;
     .cont {
-      padding-top: 74px;
       width: 900px;
+      padding-top: 10px;
+      overflow-x: hidden;
       margin: 0 auto;
       display: flex;
       flex-direction: row;
@@ -137,7 +122,7 @@ export default {
       }
       .msg-btns {
         position: fixed;
-        margin-left: 1100px;
+        right: 300px;
         bottom: 180px;
       }
     }
@@ -148,10 +133,12 @@ export default {
   }
 
   .foot {
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
     height: 70px;
+    margin-top: 10px;
     background-color: #fff;
-    top: 0px;
-    left: 0px;
     display: flex;
     flex-direction: row;
     justify-content: center;

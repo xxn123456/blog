@@ -7,22 +7,25 @@
     </div>
     <div class="bg-video">
       <img src="@/static/img/1739959905607.jpg" />
-      <div class="bg-title">项目名称：{{blog.title}}</div>
+      <div class="bg-title">项目名称：{{ blog.title }}</div>
     </div>
     <div class="cont-wrap">
       <div class="cont">
-         <h1></h1>
-         <mavon-editor
-            v-model="blog.content"
-            codeStyle="tomorrow-night-eighties"
-            :subfield="false"
-            :toolbarsFlag="false"
-            :preview="true"
-            defaultOpen="preview"
-            :boxShadow="false"
-            previewBackground="#fff"
-          >
-          </mavon-editor>
+        <div class="cont-des">
+          <div>类型：{{ blog.tag }}</div>
+          <div>介绍：{{ blog.des }}</div>
+        </div>
+        <mavon-editor
+          v-model="blog.content"
+          codeStyle="tomorrow-night-eighties"
+          :subfield="false"
+          :toolbarsFlag="false"
+          :preview="true"
+          defaultOpen="preview"
+          :boxShadow="false"
+          previewBackground="#fff"
+        >
+        </mavon-editor>
       </div>
     </div>
     <div class="foot">
@@ -42,6 +45,8 @@ export default {
       blog: {
         title: "文章标题",
         content: "",
+        des: "",
+        tag: "",
       },
     };
   },
@@ -61,10 +66,11 @@ export default {
       queryWorkDetail(msg).then((res) => {
         let { code, data } = res;
         if (code == "200") {
-          
           this.blog = {
-             title: data.title,
-             content: data.cont,
+            title: data.title,
+            des: data.des,
+            tag: data.tag,
+            content: data.cont,
           };
         }
       });
@@ -75,12 +81,12 @@ export default {
 
 <style lang="scss" scoped>
 .home {
-  min-width: 1050px;
+  width: 100%;
   position: relative;
-  background-image: url("../static/layout/background.png");
-
+  min-height: 100vh;
+   background-color: rgba(238, 238, 238, 0.6);
   .head {
-    position: fixed;
+    position: sticky;
     top: 0;
     left: 0;
     width: 100%;
@@ -93,7 +99,7 @@ export default {
     user-select: none;
 
     .head-cont {
-      width: 1050px;
+      width: 1080px;
       height: 100%;
       margin: 0 auto;
     }
@@ -106,7 +112,7 @@ export default {
       width: 100%;
       height: 380px;
     }
-    .bg-title{
+    .bg-title {
       position: absolute;
       top: 150px;
       height: 80px;
@@ -121,15 +127,22 @@ export default {
   .cont-wrap {
     width: 100%;
     height: auto;
-    background-color: rgba(238, 238, 238, 0.6);
-
     .cont {
-      padding-top: 30px;
       width: 1050px;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
       margin-bottom: 100px;
+    
+      .cont-des {
+        width: 100%;
+        text-align: center;
+        background-color: #ffffff;
+        line-height: 36px;
+        margin-top: 10px;
+        padding: 10px 15px;
+        box-sizing: border-box;
+      }
 
       .up-msg {
         margin-bottom: 30px;
@@ -160,10 +173,11 @@ export default {
   }
 
   .foot {
+    position: absolute;
+    width: 100%;
     height: 70px;
     background-color: #fff;
-    top: 0px;
-    left: 0px;
+    bottom: 0px;
     display: flex;
     flex-direction: row;
     justify-content: center;
