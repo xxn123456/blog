@@ -1,145 +1,112 @@
 const webSetModel = require("../../modules/blog/webSet");
-
+const { HttpException } = require("../../middleware/httpException.js")
 class webSetController {
-    /**
-     * 创建文章
-     * @param ctx
-     * @returns {Promise.<void>}
-     */
     static async create(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.name && req.configs) {
-             //创建文章模型
-             const data = await webSetModel.createwebSet(req);
-             if(data[0]==1){
-                ctx.response.status = 200;
-                return ctx.body = {
-                        code: 200,
-                        msg: '创建配置项成功',
-                    }
-             }else{
-                ctx.response.status = 200;
-                return ctx.body = {
-                    code: 500,
-                    msg: '创建配置项失败',
-                }
-             }
-           
+        if (!req.name) {
+            throw new HttpException("400", "配置名称name是必填字段", '');
         }
-        ctx.response.status = 400;
+        if (!req.configs) {
+            throw new HttpException("400", "配置项configs是必填字段", '');
+        }
+        const info = await webSetModel.createwebSet(req)
+        ctx.response.status = 200;
+        return ctx.body = {
+            code: 200,
+            msg: '创建配置项成功',
+            data: info
+        }
     }
-    static async updata(ctx) {
-        //接收客服端
+    static async update(ctx) {
         let req = ctx.request.body;
-        if (req.id) {
-            let data = webSetModel.upDatawebSet(req);
-            if(data[0]==1){
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    msg: '更新配置项成功',
-                }
-            }else{
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '更新配置项失败'
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.id) {
+            throw new HttpException("400", "配置id不能为空", '');
+        }
+        const info = await webSetModel.updatewebSet(req)
+        if (info[0] == 1) {
             ctx.body = {
                 code: 200,
-                msg: '类别id不能为空'
+                msg: '更新作品成功',
+            }
+        } else {
+            ctx.body = {
+                code: 500,
+                msg: '更新作品失败',
+                data: info
             }
         }
+
     }
-
-    // 删除配置项
-
     static async del(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.id) {
-            let data = await webSetModel.delwebSet(req.id)
-            if(data[0]==1){
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    msg: '删除配置项成功',
-                }
-            }else{
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '删除配置项失败'
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.id) {
+            throw new HttpException("400", "配置id不能为空", '');
+        }
+        const info = await webSetModel.delwebSet(req.id)
+        if (info == 1) {
             ctx.body = {
                 code: 200,
-                msg: '类别id不能为空'
+                msg: '删除配置项成功',
+            }
+        } else {
+            ctx.body = {
+                code: 500,
+                msg: '删除配置项失败'
             }
         }
     }
-
-    // 批量删除操作
 
     static async batchDel(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.batchList) {
-           
-            try {
-                //创建文章模型
-                let data=await webSetModel.bacthDel(req.batchList);
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    webSet:data,
-                    msg: '批量删除配置项成功',
-                }
-            } catch (err) {
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '批量删除配置项失败',
-                    data:err
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.batchList) {
+            throw new HttpException("400", "batchList是必填字段", '');
+        }
+        try {
+            let data = await webSetModel.bacthDel(req.batchList);
             ctx.body = {
                 code: 200,
-                msg: '类别id不能为空'
+                webSet: data,
+                msg: '批量删除配置项成功',
+            }
+        } catch (err) {
+            ctx.body = {
+                code: 500,
+                msg: '批量删除配置项失败',
+                data: err
             }
         }
     }
-
-    // 查询所有分页
 
     static async findAll(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.currentPage && req.pageSize) {
-            let data = await webSetModel.finAllwebSet(req);
-            ctx.response.status = 200;
-            return ctx.body = {
+        try {
+            if (!req.currentPage) {
+                req.currentPage = 1
+            }
+            if (!req.pageSize) {
+                req.pageSize = 10
+            }
+            let data = await webSetModel.finAllwebSet(req)
+            ctx.body = {
                 code: 200,
+                msg: '查找所有配置成功',
                 data
             }
+        } catch (error) {
+            ctx.body = {
+                code: 500,
+                msg: '查找所有配置失败',
+                data: error
+            }
         }
-        ctx.response.status = 400;
     }
-
-      // 查找文章详情
 
     static async findOne(ctx) {
         let req = ctx.request.body;
+        if (!req.id) {
+            throw new HttpException("400", "配置id不能为空", '');
+        }
         let data = await webSetModel.detail(req.id);
-        ctx.response.status = 200;
         ctx.body = {
             code: 200,
             msg: '查找配置详情成功',

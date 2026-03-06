@@ -1,140 +1,101 @@
 const navTypeModel = require("../../modules/blog/navType");
-
+const { HttpException } = require("../../middleware/httpException.js")
 class navTypeController {
-    /**
-     * 创建文章
-     * @param ctx
-     * @returns {Promise.<void>}
-     */
     static async create(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.categoryName && req.categoryCreater) {
-             //创建文章模型
-             const data = await navTypeModel.createnavType(req);
-             if(data[0]==1){
-                ctx.response.status = 200;
-                return ctx.body = {
-                        code: 200,
-                        msg: '创建文章类别成功',
-                    }
-             }else{
-                ctx.response.status = 200;
-                return ctx.body = {
-                    code: 500,
-                    msg: '创建文章类别失败',
-                }
-             }
-           
+        if (!req.icon) {
+            throw new HttpException("400", "导航图标icon是必填字段", '');
         }
-        ctx.response.status = 400;
+        if (!req.categoryName) {
+            throw new HttpException("400", "导航名称categoryName是必填字段", '');
+        }
+        if (!req.leftNavUrl) {
+            throw new HttpException("400", "导航路由leftNavUrl是必填字段", '');
+        }
+        const info = await navTypeModel.createnavType(req)
+        ctx.body = {
+            code: 200,
+            msg: '创建导航成功',
+            data: info
+        }
     }
-    static async updata(ctx) {
-        //接收客服端
+    static async update(ctx) {
         let req = ctx.request.body;
-        if (req.id) {
-            let data = navTypeModel.upDatanavType(req);
-            if(data[0]==1){
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    msg: '更新文章类别成功',
-                }
-            }else{
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '更新文章类别失败'
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.id) {
+            throw new HttpException("400", "导航id不能为空", '');
+        }
+        const info = await navTypeModel.updatenavType(req)
+        if (info[0] == 1) {
             ctx.body = {
                 code: 200,
-                msg: '类别id不能为空'
+                msg: '更新导航成功',
+            }
+        } else {
+            ctx.body = {
+                code: 500,
+                msg: '更新导航失败',
+                data: info
             }
         }
     }
-
-    // 删除文章类别
-
     static async del(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.id) {
-            let data = await navTypeModel.delnavType(req.id)
-            if(data[0]==1){
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    msg: '删除文章类别成功',
-                }
-            }else{
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '删除文章类别失败'
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.id) {
+            throw new HttpException("400", "导航id不能为空", '');
+        }
+        const info = await navTypeModel.delnavType(req.id)
+        if (info == 1) {
             ctx.body = {
                 code: 200,
-                msg: '类别id不能为空'
+                msg: '删除导航成功',
+            }
+        } else {
+            ctx.body = {
+                code: 500,
+                msg: '删除导航失败',
+                data: info
             }
         }
     }
-
-    // 批量删除操作
-
     static async batchDel(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.batchList) {
-           
-            try {
-                //创建文章模型
-                let data=await navTypeModel.bacthDel(req.batchList);
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    navType:data,
-                    msg: '批量删除文章类别成功',
-                }
-            } catch (err) {
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '批量删除文章类别失败',
-                    data:err
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.batchList) {
+            throw new HttpException("400", "batchList是必填字段", '');
+        }
+        try {
+            await navTypeModel.bacthDel(req.batchList);
             ctx.body = {
                 code: 200,
-                msg: '类别id不能为空'
+                msg: '批量删除导航成功',
+            }
+        } catch (err) {
+            ctx.body = {
+                code: 500,
+                msg: '批量导航失败',
+                data: err
             }
         }
     }
-
-    // 查询所有分页
-
     static async findAll(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.currentPage && req.pageSize) {
+        try {
+            if (!req.currentPage) {
+                req.currentPage = 1
+            }
+            if (!req.pageSize) {
+                req.pageSize = 10
+            }
             let data = await navTypeModel.finAllnavType(req);
-            ctx.response.status = 200;
             ctx.body = {
                 code: 200,
+                msg: '查找所有导航成功',
                 data
             }
-        } else {
-            ctx.response.status = 500;
+        } catch (error) {
             ctx.body = {
-                code: 200,
-                msg: '参数不齐全'
+                code: 500,
+                msg: '查找所有导航失败',
+                data: error
             }
         }
     }

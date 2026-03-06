@@ -4,45 +4,27 @@ module.exports = function(sequelize, DataTypes) {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            allowNull: true,
             autoIncrement: true
         },
-        //文章类别名称
-        categoryName: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'categoryName'
-        },
-
         icon: {
             type: DataTypes.STRING,
             allowNull: false,
             field: 'icon'
         },
-
+        categoryName: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            field: 'categoryName'
+        },
         leftNavUrl: {
             type: DataTypes.STRING,
             allowNull: false,
             field: 'leftNavUrl'
         },
-        //类别下面存在的文章数量
-        categoryNum: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'categoryNum',
-            defaultValue: '0' 
-        },
-        // 类别创建人
-        categoryCreater: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'categoryCreater'
-        },
         // 创建时间
         createdAt: {
             type: DataTypes.DATE,
             get () {
-                // console.log(this.getDataValue('created_time'))
                 return this.getDataValue('createdAt') ? moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss') : null;
               }
         },
@@ -50,7 +32,6 @@ module.exports = function(sequelize, DataTypes) {
         updatedAt: {
             type: DataTypes.DATE,
             get () {
-                // console.log(this.getDataValue('created_time'))
                 return this.getDataValue('updatedAt') ? moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss') : null;
               }
         }

@@ -4,23 +4,17 @@ module.exports = function(sequelize, DataTypes) {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            allowNull: true,
             autoIncrement: true
-        },
-        height: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            field: 'height'
-        },
-        cardType: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'cardType'
         },
         tag: {
             type: DataTypes.STRING,
             allowNull: false,
             field: 'tag'
+        },
+        coverBg: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            field: 'coverBg'
         },
         title: {
             type: DataTypes.STRING,
@@ -32,11 +26,6 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             field: 'des'
         },
-        coverBg: {
-            type: DataTypes.STRING,
-            allowNull: false,
-            field: 'coverBg'
-        },
         cont: {
             type: DataTypes.TEXT,
             allowNull: false,
@@ -46,7 +35,6 @@ module.exports = function(sequelize, DataTypes) {
         createdAt: {
             type: DataTypes.DATE,
             get () {
-                // console.log(this.getDataValue('created_time'))
                 return this.getDataValue('createdAt') ? moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss') : null;
               }
         },
@@ -54,7 +42,6 @@ module.exports = function(sequelize, DataTypes) {
         updatedAt: {
             type: DataTypes.DATE,
             get () {
-                // console.log(this.getDataValue('created_time'))
                 return this.getDataValue('updatedAt') ? moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss') : null;
               }
         }

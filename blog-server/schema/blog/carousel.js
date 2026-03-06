@@ -5,7 +5,6 @@ module.exports = function(sequelize, DataTypes) {
             id: {
                 type: DataTypes.INTEGER,
                 primaryKey: true,
-                allowNull: true,
                 autoIncrement: true
             },
             pic: {
@@ -21,16 +20,6 @@ module.exports = function(sequelize, DataTypes) {
                 type: DataTypes.STRING,
                 field: 'title',
                 defaultValue: ''
-            },
-            userId:{
-                type: DataTypes.STRING,
-                field: 'userId',
-                defaultValue: '1'
-            },
-            active:{
-                type:DataTypes.INTEGER,
-                field: 'active',
-                allowNull: false,
             },
             createdAt: {
                 type: DataTypes.DATE,

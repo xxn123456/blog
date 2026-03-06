@@ -1,213 +1,114 @@
 
 const CarouselModel = require("../../modules/blog/carousel.js");
-
+const { HttpException } = require("../../middleware/httpException.js")
 class CarouselController {
-    /**
-     * 创建文章
-     * @param ctx
-     * @returns {Promise.<void>}
-     */
     static async create(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.pic) {
-            try {
-                let maxNum = await CarouselModel.finAll();
-
-                if (maxNum.count > 5) {
-                    ctx.response.status = 200;
-                    ctx.body = {
-                        code: 403,
-                        des: '超过轮播图最大设置-5',
-                    }
-
-                } else {
-                    //创建文章模型
-                    const ret = await CarouselModel.create(req);
-                    //使用刚刚创建的文章ID查询文章详情，且返回文章详情信息
-                    const data = await CarouselModel.detail(ret.id);
-
-                    ctx.response.status = 200;
-                    ctx.body = {
-                        code: 200,
-                        data: data,
-                        des: '创建轮播成功',
-                    }
-
-                }
-
-            } catch (err) {
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '创建轮播失败',
-                    des: err
-                }
+        if (!req.pic) {
+            throw new HttpException("400", "图片路径pic是必填字段", '');
+        }
+        let maxNum = await CarouselModel.finAll();
+        if (maxNum.count > 5) {
+            ctx.body = {
+                code: "-1",
+                msg: '超过轮播图最大设置-5',
             }
+
         } else {
-            ctx.response.status = 500;
+            const info = await CarouselModel.create(req);
             ctx.body = {
                 code: 200,
-                msg: '轮播图片不能为空'
+                msg: '创建轮播成功',
+                data: info,
             }
+
         }
     }
 
-    static async updata(ctx) {
-        //接收客服端
+    static async update(ctx) {
         let req = ctx.request.body;
-        if (req.id && req.pic) {
-            try {
-                //创建文章模型
-                await CarouselModel.upDate(req);
-                const data = await CarouselModel.detail(req.id);
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    data: data,
-                    des: '更新轮播成功',
-                }
-            } catch (err) {
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '更新轮播失败',
-                    des: err
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.id) {
+            throw new HttpException("400", "轮播id不能为空", '');
+        }
+        const info = await CarouselModel.update(req);
+        if (info[0] == 1) {
             ctx.body = {
                 code: 200,
-                msg: '轮播id跟轮播图片不能为空'
+                msg: '更新轮播成功',
+            }
+        } else {
+            ctx.body = {
+                code: 500,
+                msg: '更新轮播失败',
+                data: info
             }
         }
+
     }
-
-    // 删除文章类别
-
     static async del(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.id) {
-            try {
-                //创建文章模型
-                const data = await CarouselModel.del(req.id);
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    data: data,
-                    des: '删除轮播成功',
-                }
-            } catch (err) {
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '删除轮播失败',
-                    des: err
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.id) {
+            throw new HttpException("400", "轮播id不能为空", '');
+        }
+        const info = await CarouselModel.del(req.id);
+        if (info == 1) {
             ctx.body = {
                 code: 200,
-                msg: '轮播id不能为空'
+                msg: '更新轮播成功',
+            }
+        } else {
+            ctx.body = {
+                code: 500,
+                msg: '更新轮播失败',
+                data: info
             }
         }
     }
-
-    // 批量删除操作
-
     static async batchDel(ctx) {
-        //接收客服端
         let req = ctx.request.body;
-        if (req.batchList) {
-            try {
-                //创建文章模型
-                const data = await CarouselModel.bacthDel(req.batchList);
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    data: data,
-                    des: '批量删除轮播成功',
-                }
-            } catch (err) {
-                ctx.response.status = 500;
-                ctx.body = {
-                    code: 500,
-                    msg: '批量删除轮播失败',
-                    des: err
-                }
-            }
-        } else {
-            ctx.response.status = 500;
+        if (!req.batchList) {
+            throw new HttpException("400", "batchList是必填字段", '');
+        }
+        try {
+            const info = await CarouselModel.bacthDel(req.batchList);
             ctx.body = {
                 code: 200,
-                msg: '轮播id数组不能为空'
+                msg: '批量删除轮播成功',
+                data: info,
+            }
+        } catch (err) {
+            ctx.response.status = 500;
+            ctx.body = {
+                code: 500,
+                msg: '批量删除轮播失败',
+                data: err
             }
         }
+
     }
-
-    // 查询所有分页
-
     static async findAll(ctx) {
-        //接收客服端
         let req = ctx.request.body;
         try {
-            //创建文章模型
-            const data = await CarouselModel.finAll(req);
-            ctx.response.status = 200;
+            if (!req.currentPage) {
+                req.currentPage = 1
+            }
+            if (!req.pageSize) {
+                req.pageSize = 10
+            }
+            let data = await CarouselModel.finAll(req);
             ctx.body = {
                 code: 200,
-                data: data,
-                des: '查找所所有成功',
+                msg: '查找所有轮播成功',
+                data
             }
-        } catch (err) {
-            ctx.response.status = 500;
+        } catch (error) {
             ctx.body = {
                 code: 500,
-                msg: '查找所有异常',
-                des: err
+                msg: '查找所有轮播失败',
+                data: error
             }
         }
     }
-
-    static async queryCarousel(ctx) {
-        //接收客服端
-        let req = ctx.request.body;
-        try {
-            //创建文章模型
-            const data = await CarouselModel.queryCarousel(req.active);
-            if (data) {
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    data: data,
-                    des: '当前次序已经存在',
-                    state: 1
-                }
-
-            } else {
-                ctx.response.status = 200;
-                ctx.body = {
-                    code: 200,
-                    data: data,
-                    des: '可以进行添加',
-                    state: 0
-                }
-
-            }
-
-        } catch (err) {
-            ctx.response.status = 500;
-            ctx.body = {
-                code: 500,
-                msg: '调整次数异常',
-                des: err
-            }
-        }
-    }
-
 }
 
 module.exports = CarouselController;

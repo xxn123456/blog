@@ -1,79 +1,38 @@
 const Router = require('koa-router');
 const router = new Router({ prefix: '/upload' });
+const path = require('path');
 
-const multer = require('koa-multer');
-
-// 上传文章图片
-var storage = multer.diskStorage({
-    //文件保存路径
-    destination: function (req, file, cb) {
-        cb(null, 'public/images/article/')
-    },
-    //修改文件名称
-    filename: function (req, file, cb) {
-        var fileFormat = (file.originalname).split(".");
-        cb(null, Date.now() + "." + fileFormat[fileFormat.length - 1]);
-    }
-})
-//加载配置
-var upload = multer({ storage: storage });
-
-
-// 上传轮播图片
-var storageCarouse = multer.diskStorage({
-    //文件保存路径
-    destination: function (req, file, cb) {
-        cb(null, 'public/images/carousel/')
-    },
-    //修改文件名称
-    filename: function (req, file, cb) {
-        var fileFormat = (file.originalname).split(".");
-        cb(null, Date.now() + "." + fileFormat[fileFormat.length - 1]);
-    }
-})
-
-var carouselUp = multer({ storage: storageCarouse })
+const OSS = require('ali-oss');
+const client = new OSS({
+   region: 'oss-cn-hangzhou',
+   accessKeyId: 'LTAI5tNbW83pMmQ6GiEdJit4',
+   accessKeySecret: 'YacY0qQ5UC3ZegBBYTacbaxfuFQBxH',
+   bucket: 'shutiao',
+});
 
 
 // 上传文章图片
-router.post('/articleImg', upload.single('articleImg'), async (ctx, next) => {
-    try {
-        ctx.response.status = 200;
-        ctx.body = {
-            code: 200,
-            url: '/images/article/' + ctx.req.file.filename,
-            des: "文章图片上传成功"
-        }
-    } catch (err) {
-        ctx.response.status = 500;
-        ctx.body = {
-            code: 500,
-            des: "文章图片上传失败",
-            data: err
-        }
+router.post('/oss', async (ctx, next) => {
+   const file = ctx.request.files.file;
+   var fileFormat = (file.originalFilename).split(".");
+   const filename = Date.now() + "." + fileFormat[fileFormat.length - 1];
+   try {
+      await client.put('article/' + filename, file.filepath);
+      ctx.response.status = 200;
+      ctx.body = {
+          code: 200,
+          url: 'http://upload.shutiaogege.top/article/' + filename,
+          des: "文章图片上传成功"
+      }
+  } catch (err) {
+      ctx.response.status = 500;
+      ctx.body = {
+          code: 500,
+          des: "文章图片上传失败",
+          data: err
+      }
 
-    }
-
-})
-
-// 上传广告轮播图片
-router.post('/carousel', carouselUp.single('file'), async (ctx, next) => {
-    try {
-        ctx.response.status = 200;
-        ctx.body = {
-            code: 200,
-            url: '/images/carousel/' + ctx.req.file.filename,
-            des: "轮播上传成功"
-        }
-    } catch (err) {
-        ctx.response.status = 500;
-        ctx.body = {
-            code: 500,
-            des: "轮播上传失败",
-            data: err
-        }
-
-    }
+  }
 
 })
 module.exports = router

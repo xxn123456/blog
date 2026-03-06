@@ -4,7 +4,6 @@ module.exports = function(sequelize, DataTypes) {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            allowNull: true,
             autoIncrement: true
         },
         name: {
@@ -21,7 +20,6 @@ module.exports = function(sequelize, DataTypes) {
         createdAt: {
             type: DataTypes.DATE,
             get () {
-                // console.log(this.getDataValue('created_time'))
                 return this.getDataValue('createdAt') ? moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss') : null;
               }
         },
@@ -29,7 +27,6 @@ module.exports = function(sequelize, DataTypes) {
         updatedAt: {
             type: DataTypes.DATE,
             get () {
-                // console.log(this.getDataValue('created_time'))
                 return this.getDataValue('updatedAt') ? moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss') : null;
               }
         }

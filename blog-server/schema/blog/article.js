@@ -1,43 +1,29 @@
 const moment = require("moment");
-module.exports = function(sequelize, DataTypes) {
-    const Blog = sequelize.define('blog', {
+module.exports = function (sequelize, DataTypes) {
+    const Blog = sequelize.define('article', {
         id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            allowNull: true,
             autoIncrement: true
         },
-        //文章名称
         title: {
             type: DataTypes.STRING,
             allowNull: false,
             field: 'title'
         },
-        userId: {
-            type: DataTypes.INTEGER,
-            field: 'userId',
-            unique: true
-        },
-        //文章类别
-        navTypeId: {
+        book: {
             type: DataTypes.STRING,
-            allowNull: false,
-            field: 'navTypeId',
-            defaultValue: '0' ,
+            field: 'book'
+
         },
-        // 访问量
         visitNum: {
             type: DataTypes.INTEGER,
             field: 'visitNum',
-            defaultValue:0
+            defaultValue: 0
         },
         userId: {
             type: DataTypes.INTEGER,
             field: 'userId'
-        },
-        recommend: {
-            type: DataTypes.INTEGER,
-            field: 'recommend'
         },
         url: {
             type: DataTypes.STRING,
@@ -47,33 +33,30 @@ module.exports = function(sequelize, DataTypes) {
             type: DataTypes.TEXT,
             field: 'content'
         },
-
-        book: {
+        userId: {
+            type: DataTypes.INTEGER,
+            field: 'userId',
+            unique: true
+        },
+        //文章类别
+        navTypeId: {
             type: DataTypes.STRING,
-            allowNull: true,
-            field: 'book',
-            get(){
-                if(this.getDataValue('book')==null){
-                    return "/images/book/article-pic.png"
-                }else{
-                    return this.getDataValue('book')
-                }
-            }
-
+            field: 'navTypeId',
+            defaultValue: '0',
         },
         // 创建时间
         createdAt: {
             type: DataTypes.DATE,
-            get () {
+            get() {
                 return this.getDataValue('createdAt') ? moment(this.getDataValue('createdAt')).format('YYYY-MM-DD HH:mm:ss') : null;
-              }
+            }
         },
         // 更新时间
         updatedAt: {
             type: DataTypes.DATE,
-            get () {
+            get() {
                 return this.getDataValue('updatedAt') ? moment(this.getDataValue('updatedAt')).format('YYYY-MM-DD HH:mm:ss') : null;
-              }
+            }
         }
     }, {
         /**
