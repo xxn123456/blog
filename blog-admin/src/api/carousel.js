@@ -6,9 +6,6 @@ export function findAll(data) {
     url: '/carousel/findAll',
     // 此处admin是代理
     method: 'post',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
     data
   })
 }
@@ -19,9 +16,6 @@ export function findOne(data) {
     url: '/carousel/findOne',
     // 此处admin是代理
     method: 'post',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
     data
   })
 }
@@ -30,9 +24,6 @@ export function queryCarousel(data) {
     url: '/carousel/queryCarousel',
     // 此处admin是代理
     method: 'post',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
     data
   })
 }
@@ -43,9 +34,6 @@ export function create(data) {
       url: '/carousel/create',
       // 此处admin是代理
       method: 'post',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
       data
     })
   }
@@ -55,9 +43,6 @@ export function update(data) {
       url: '/carousel/update',
       // 此处admin是代理
       method: 'post',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
       data
     })
   }
@@ -69,9 +54,6 @@ export function del(data) {
       url: '/carousel/del',
       // 此处admin是代理
       method: 'post',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
       data
     })
   }
@@ -108,7 +90,7 @@ export function batchUpdate(data) {
 
 export function upload(data) {
   return request({
-    url: '/upload/articleImg',
+    url: '/upload/oss',
     // 此处admin是代理
     method: 'post',
     headers: {

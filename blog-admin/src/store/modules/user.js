@@ -1,13 +1,10 @@
 import { login, logout, getInfo } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import router, { resetRouter } from '@/router'
-import querystring from 'querystring'
 
 const state = {
-  userId: '',
   token: getToken(),
   userInfo: {},
-  introduction: '',
   roles: []
 }
 
@@ -16,23 +13,15 @@ const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token
   },
-  SET_INTRODUCTION: (state, introduction) => {
-    state.introduction = introduction
-  },
   SET_USER: (state, info) => {
     state.userInfo = info
   },
   SET_ROLES: (state, roles) => {
     state.roles = roles
   },
-  SET_ID: (state, msg) => {
-    state.userId = msg
-  },
   SET_LAYOUT: (state, data) => {
     state.layout = data
   },
- 
-
 }
 
 const actions = {
@@ -41,66 +30,43 @@ const actions = {
     const { username, password } = userInfo
     return new Promise((resolve, reject) => {
       // 将json 字符串转化为x-from
-      const user = querystring.stringify({ username: username.trim(), password: password })
-
-      console.log(user)
-
+      const user = JSON.stringify({ username: username.trim(), password: password })
       login(user).then(response => {
-        console.log("登录成")
-      
         if (response.code == 200) {
           console.log("第一步")
           const { token } = response;
           // 将token放到vuex
-          commit('SET_TOKEN',token)
+          commit('SET_TOKEN', token)
           // 储存token 到cookie
           setToken(token);
-           // 登录成功获取用户信息
-   
+          // 登录成功获取用户信息
         }
 
         resolve()
       }).catch(error => {
-
         this.$message('储存token失败');
-
-
-        
-        
         reject(error)
       })
     })
   },
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
-     
-     
+      getInfo().then((res) => {
+        let { data } = res;
+        commit('SET_USER', data);
+        commit('SET_ROLES',data.role.name);
+        resolve({
+          role:data.role
+        })
 
-       getInfo().then((res) => {
-         let {userInfo} =res;
-
-         console.log("获取到的用户信息",userInfo);
-         
-         commit('SET_USER',userInfo);
-
-         let userRole=['admin'];
-
-         commit('SET_ROLES',userRole);
-   
-         resolve(userRole)
-
-        
-       
-         
-      
       }).catch(error => {
-        
+
 
         removeToken()
         reject(error)
       })
-     
-     
+
+
     })
   },
 

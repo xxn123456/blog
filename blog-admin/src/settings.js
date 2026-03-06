@@ -1,5 +1,5 @@
 module.exports = {
-  title: '忘却之都-博客后台',
+  title: '久别的博客后台',
   /**
    * @type {boolean} true | false
    * @description Whether show the settings right-panel

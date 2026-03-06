@@ -3,7 +3,7 @@ import request from '@/utils/request'
 // 搜索分页
 export function findAll(data) {
   return request({
-    url: '/blog/findAll',
+    url: '/works/findAll',
     // 此处admin是代理
     method: 'post',
     data
@@ -13,7 +13,7 @@ export function findAll(data) {
 // 查找文章详情
 export function findOne(data) {
   return request({
-    url: '/blog/findOne',
+    url: '/works/findOne',
     // 此处admin是代理
     method: 'post',
     data
@@ -23,7 +23,7 @@ export function findOne(data) {
 // 创建文章类别
 export function create(data) {
     return request({
-      url: '/blog/create',
+      url: '/works/create',
       // 此处admin是代理
       method: 'post',
       data
@@ -32,7 +32,7 @@ export function create(data) {
 // 修改文章类别
 export function updata(data) {
     return request({
-      url: '/blog/update',
+      url: '/works/update',
       // 此处admin是代理
       method: 'post',
       data
@@ -43,7 +43,7 @@ export function updata(data) {
 
 export function del(data) {
     return request({
-      url: '/blog/del',
+      url: '/works/del',
       // 此处admin是代理
       method: 'post',
       data
@@ -54,7 +54,7 @@ export function del(data) {
 
 export function batchDel(data) {
   return request({
-    url: '/blog/batchDel',
+    url: '/works/batchDel',
     // 此处admin是代理
     method: 'post',
     headers: {
@@ -78,7 +78,7 @@ export function upload(data) {
 }
 export function upBook(data) {
   return request({
-    url: '/blog/upBook',
+    url: '/works/upBook',
     // 此处admin是代理
     method: 'post',
     headers: {
@@ -87,17 +87,6 @@ export function upBook(data) {
     data
   })
 }
-
-
-export function findAllNav(data) {
-  return request({
-    url: '/navType/findAll',
-    // 此处admin是代理
-    method: 'post',
-    data
-  })
-}
-
 
 
 

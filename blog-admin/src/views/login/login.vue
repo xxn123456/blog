@@ -2,8 +2,7 @@
   <div class="login-container">
     <div class="web-about">
       <div class="web-msg">
-        <h2>忘却之都</h2>
-        <span>返回博客主页</span>
+        <h2>久别的博客</h2>
       </div>
     </div>
     <div class="login-wrap">
@@ -46,10 +45,8 @@
     <div class="about-link">
       <div class="some-link">
         <ul>
-          <li><span>忘却之都</span><span>|</span><span>个人主页</span><span>|</span><span>作品简介</span></li>
-
+          <li><span @click="toNuxt">博客主页</span><span>|</span><span @click="toGit">代码仓库</span><span>|</span><span>友情链接</span></li>
           <li><span /></li>
-
         </ul>
       </div>
 
@@ -64,8 +61,8 @@
     data() {
       return {
         loginForm: {
-          username: '',
-          password: ''
+          username: 'vistor',
+          password: '123456'
         },
         passwordType: 'password',
         loading: false,
@@ -98,7 +95,7 @@
             this.$store.dispatch('user/login', this.loginForm).then((error) => {
               this.loading = false
               this.$router.push({
-                path: '/blog/homeSwiper' || '/'
+                path: '/auth/user' || '/'
               });
                this.$store.dispatch('user/getInfo');
             }).catch(() => {
@@ -110,6 +107,12 @@
         }
 
     
+      },
+      toNuxt(){
+        window.location.href="http://blog.shutiaogege.top/"
+      },
+      toGit(){
+        window.location.href="https://github.com/xxn123456/blog"
       }
     }
   }
@@ -120,7 +123,7 @@
   .login-container {
     height: 100%;
     width: 100%;
-
+    min-width: 1200px;
     background-position: center;
     background-size: 100% 100%;
     display: flex;
@@ -155,6 +158,7 @@
       .some-link {
         width: 1050px;
         margin: 60px auto;
+        cursor: pointer;
 
         ul {
           padding-left: 0px;

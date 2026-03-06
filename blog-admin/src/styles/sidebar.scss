@@ -1,6 +1,7 @@
 #app {
 
   .main-container {
+    min-width: 1200px;
     min-height: 100%;
     transition: margin-left .28s;
     margin-left: $sideBarWidth;

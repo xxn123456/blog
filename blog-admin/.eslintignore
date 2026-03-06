@@ -2,5 +2,5 @@ build/*.js
 src/assets
 public
 dist
-wangque_admin
+blog_admin
 src/

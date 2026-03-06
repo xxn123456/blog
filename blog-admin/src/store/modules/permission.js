@@ -1,3 +1,4 @@
+import permission from '@/directive/permission'
 import { asyncRoutes, constantRoutes } from '@/router'
 
 /**
@@ -51,14 +52,17 @@ export function filterAsyncRoutes(routes, roles) {
 
 const state = {
   routes: [],
-  addRoutes: []
+  addRoutes: [],
+  permissionBtns: {}
 }
 
 const mutations = {
   SET_ROUTES: (state, routes) => {
-    console.log("同步路由",constantRoutes);
     state.addRoutes = routes;
     state.routes = constantRoutes.concat(routes)
+  },
+  SET_BTNS: (state, btns) => {
+    state.permissionBtns = btns;
   }
 }
 
@@ -66,20 +70,8 @@ const actions = {
   generateRoutes({ commit }, roles) {
     return new Promise(resolve => {
       // 动态挂在 错误路由
-     
-      
-
-      let accessedRoutes;
-
-      accessedRoutes = [];
-
-      console.log("装载路由");
-
-      commit('SET_ROUTES', accessedRoutes);
-
-      
-
-      resolve(accessedRoutes)
+      commit('SET_ROUTES',roles);
+      resolve(roles)
     })
   }
 }

@@ -35,147 +35,117 @@ import Layout from '@/layout'
  * all roles can be accessed
  */
 export const constantRoutes = [{
-    path: '/redirect',
+  path: '/redirect',
+  component: () => import('@/layout/index.vue'),
+  hidden: true,
+  children: [{
+    path: '/redirect/:path(.*)',
+    component: () =>
+      import('@/views/redirect/index')
+  }]
+},
+{
+  path: '/login',
+  component: () =>
+    import('@/views/login/login.vue'),
+  hidden: true
+},
+{
+  path: '/auth-redirect',
+  component: () =>
+    import('@/views/login/auth-redirect'),
+  hidden: true
+},
+{
+  path: '/blogEdit',
+  component: () =>
+    import('@/views/blog/article/edit.vue'),
+  meta: {
+    title: '编辑一篇文章',
+    icon: 'blog'
+  },
+  hidden: true
+},
+{
+  path: '/workEdit',
+  component: () =>
+    import('@/views/blog/works/edit.vue'),
+  meta: {
+    title: '编辑一篇文章',
+    icon: 'blog'
+  },
+  hidden: true
+}
+]
+/**
+ * asyncRoutes
+ * the routes that need to be dynamically loaded based on user roles
+ */
+export const asyncRoutes = [
+  {
+    path: '/auth',
     component: () => import('@/layout/index.vue'),
-    hidden: true,
-    children: [{
-      path: '/redirect/:path(.*)',
-      component: () =>
-        import('@/views/redirect/index')
-    }]
-  },
-  {
-    path: '/login',
-    component: () =>
-      import('@/views/login/login.vue'),
-    hidden: true
-  },
-  {
-    path: '/auth-redirect',
-    component: () =>
-      import('@/views/login/auth-redirect'),
-    hidden: true
-  },
-
-
-  {
-    path: '/blogCreate',
-    component: () =>
-      import('@/views/wangque/article/add.vue'),
+    redirect: '/user',
     meta: {
-      title: '发布一篇文章',
-      icon: 'blog'
+      title: '权限',
+      icon: 'user'
     },
-    hidden: true
-  },
-  {
-    path: '/blogEdit',
-    component: () =>
-      import('@/views/wangque/article/edit.vue'),
-    meta: {
-      title: '编辑一篇文章',
-      icon: 'blog'
-    },
-    hidden: true
-  },
-
-
-  {
-    path: '/jobCreate',
-    component: () =>
-      import('@/views/job/article/add.vue'),
-    meta: {
-      title: '发布作品',
-      icon: 'blog'
-    },
-    hidden: true
-  },
-  {
-    path: '/jobEdit',
-    component: () =>
-      import('@/views/job/article/edit.vue'),
-    meta: {
-      title: '编辑作品',
-      icon: 'blog'
-    },
-    hidden: true
+    children: [
+      {
+        path: 'user',
+        component: () =>
+          import('@/views/user/user/index.vue'),
+        name: 'user',
+        meta: {
+          title: '用户管理',
+          icon: 'user'
+        }
+      },
+      {
+        path: 'role',
+        component: () =>
+          import('@/views/user/role/index.vue'),
+        name: 'role',
+        meta: {
+          title: '角色管理',
+          icon: 'set'
+        }
+      }
+    ]
   },
   {
     path: '/blog',
-    component: Layout,
-    redirect: '/homeSwiper',
+    component: () => import('@/layout/index.vue'),
+    redirect: '/leftNav',
     meta: {
       title: '博客',
-      icon: 'blog'
+      icon: 'form'
     },
     children: [
-      // {
-      //   path: 'dashboard',
-      //   component: () =>
-      //     import('@/views/wangque/asy/index.vue'),
-      //   name: '首页',
-      //   meta: {
-      //     title: '数据分析',
-      //     icon: 'asy',
-      //     affix: true
-      //   }
-      // },
-
-      // {
-      //   path: 'role',
-      //   component: () =>
-      //     import('@/views/wangque/role/index.vue'),
-      //   name: 'role',
-      //   meta: {
-      //     title: '角色管理',
-      //     icon: 'set'
-      //   }
-      // },
-
-      // {
-      //   path: 'user',
-      //   component: () =>
-      //     import('@/views/wangque/user/index.vue'),
-      //   name: 'user',
-      //   meta: {
-      //     title: '用户管理',
-      //     icon: 'set'
-      //   }
-      // },
+      {
+        path: 'leftNav',
+        component: () =>
+          import('@/views/blog/navType/index.vue'),
+        name: 'leftNav',
+        meta: {
+          title: '栏目',
+          icon: 'type'
+        }
+      },
       {
         path: 'homeSwiper',
         component: () =>
-          import('@/views/wangque/ad/index.vue'),
+          import('@/views/blog/homeSwiper/index.vue'),
         name: 'homeSwiper',
         meta: {
           title: '首页轮播',
           icon: 'ad'
         }
       },
-      // {
-      //   path: 'msg',
-      //   component: () =>
-      //     import('@/views/wangque/msg/index.vue'),
-      //   name: 'msg',
-      //   meta: {
-      //     title: '消息推送',
-      //     icon: 'msg'
-      //   }
-      // },
-      {
-        path: 'articleType',
-        component: () =>
-          import('@/views/wangque/articleType/index.vue'),
-        name: 'articleType',
-        meta: {
-          title: '归档',
-          icon: 'type'
-        }
-      },
       {
         path: 'article',
         component: () =>
-          import('@/views/wangque/article/index.vue'),
+          import('@/views/blog/article/index.vue'),
         name: 'article',
         meta: {
           title: '文章管理',
@@ -184,118 +154,27 @@ export const constantRoutes = [{
       },
 
       {
-        path: 'music',
+        path: 'works',
         component: () =>
-          import('@/views/wangque/music/index.vue'),
-        name: 'music',
+          import('@/views/blog/works/index.vue'),
+        name: 'works',
         meta: {
-          title: '背景音乐',
+          title: '作品集',
+          icon: 'dashboard'
+        }
+      },
+      {
+        path: 'set',
+        component: () =>
+          import('@/views/blog/webSet/index.vue'),
+        name: 'set',
+        meta: {
+          title: '系统设置',
           icon: 'music'
         }
-      },
-      // {
-      //   path: 'dan',
-      //   component: () =>
-      //     import('@/views/wangque/dan/index.vue'),
-      //   name: 'dan',
-      //   meta: {
-      //     title: '弹幕管理',
-      //     icon: 'dan'
-      //   }
-      // },
-     
-
-      // {
-      //   path: 'sure',
-      //   component: () =>
-      //     import('@/views/wangque/sure/index.vue'),
-      //   name: 'sure',
-      //   meta: {
-      //     title: '安全监控',
-      //     icon: 'sure'
-      //   }
-      // }
-
+      }
     ]
-  },
-  {
-    path: '/job',
-    component: Layout,
-    redirect: '/index',
-    meta: {
-      title: '简历系统',
-      icon: 'blog'
-    },
-    children:[
-      {
-        path: 'index',
-        component: () =>
-          import('@/views/job/article/index.vue'),
-        name: 'job_index',
-        meta: {
-          title: '作品',
-          icon: 'article'
-        }
-      },
-      {
-        path: 'kill',
-        component: () =>
-          import('@/views/job/kill/index.vue'),
-        name: 'job_kill',
-        meta: {
-          title: '技能',
-          icon: 'article'
-        }
-      },
-      {
-        path: 'exp',
-        component: () =>
-          import('@/views/job/exp/index.vue'),
-        name: 'job_exp',
-        meta: {
-          title: '工作经历',
-          icon: 'article'
-        }
-      },
-
-      {
-        path: 'info',
-        component: () =>
-          import('@/views/job/info/index.vue'),
-        name: 'job_info',
-        meta: {
-          title: '个人简介',
-          icon: 'article'
-        }
-      },
-    ]
-    
-  },
-  {
-    path: '/401',
-    component: () =>
-      import('@/views/error-page/401'),
-    hidden: true
-  },
-  {
-    path: '/404',
-    component: () =>
-      import('@/views/error-page/404'),
-    hidden: true
-  },
-]
-/**
- * asyncRoutes
- * the routes that need to be dynamically loaded based on user roles
- */
-export const asyncRoutes = [
-
-  // 404 page must be placed at the end !!!
-  // {
-  //   path: '*',
-  //   redirect: '/404',
-  //   hidden: true
-  // }
+  }
 ]
 
 const createRouter = () => new Router({
