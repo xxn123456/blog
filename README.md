@@ -7,8 +7,8 @@
 2、后台管理系统采用vue-element-admin，jwt登录方式
 3、后台服务采用koa构架，mysql数据库
 
-> 后续 搭建实时弹幕等，未来很长\
-
+> 后续 
+迭代计划-待定
 线上预览地址
 
 ``` js
@@ -22,5 +22,7 @@ http://blog.shutiaogege.top/
 
 
 
-![](http://upload.shutiaogege.top/blog/home.png)
+![](http://upload.shutiaogege.top/github/博客主页.png)
+![](http://upload.shutiaogege.top/github/博客后台.png)
+![](http://upload.shutiaogege.top/github/博客接口.png)
 
