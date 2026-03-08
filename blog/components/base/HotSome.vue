@@ -13,7 +13,7 @@
           </nuxt-link>
         </li>
       </ul>
-      <ul>
+      <ul v-else>
         <li>文章走丢了，请刷新重试</li>
       </ul>
     </div>
@@ -54,7 +54,7 @@ export default {
       this.load = true
       let params = {
         currentPage: 1,
-        pageSize: 10,
+        pageSize:5,
         recommend: 1,
       }
       if (this.blogStore.leftNav != 1) {

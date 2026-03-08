@@ -176,7 +176,7 @@ export default {
           this.articles[index].visitNum = item.visitNum + 1;
         }
       });
-      const origin = window.location.origin;
+      const origin = "http://blog.shutiaogege.top";
       const openUrl = `${origin}/detail?id=${item.id}`;
       window.open(openUrl, "_blank");
     },

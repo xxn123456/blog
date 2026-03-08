@@ -80,10 +80,9 @@ export default {
     },
     toDetail(item) {
       // 跳转
-      let openUrl = this.$router.resolve({
-        path: "/developDetail?id=" + item.id,
-      });
-      window.open(openUrl.href, "_blank");
+      const origin = "http://blog.shutiaogege.top";
+      const openUrl = `${origin}/developDetail?id=${item.id}`;
+      window.open(openUrl, "_blank");
     },
     initWater() {
       this.lists.forEach((el, index) => {

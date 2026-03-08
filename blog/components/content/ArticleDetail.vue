@@ -263,12 +263,16 @@ export default {
       getBlogDetail(params).then((res) => {
         let { code, data } = res;
         if (code == "200") {
+          let username = "未知"
+          if(data.user&&data.user.username){
+            username = data.user.username
+          }
           this.blog = {
             id: data.id,
             title: data.title,
             content: data.content,
             updatedAt: data.updatedAt,
-            username: data.user.username,
+            username: username,
             visitNum: data.visitNum,
             categoryName: data.categoryName,
           };
