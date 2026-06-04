@@ -26,10 +26,14 @@
 
     <div class="table-handle-btns">
       <el-button type="primary" v-permission="['set-add']" @click="handleAdd"
-        >新增</el-button
+        ><i class="el-icon-plus"></i> 新增</el-button
       >
-      <el-button type="primary" @click="searchList">搜索</el-button>
-      <el-button v-permission="['set-del']" @click="batchDel">删除</el-button>
+      <el-button type="success" @click="searchList"
+        ><i class="el-icon-search"></i> 搜索</el-button
+      >
+      <el-button type="danger" v-permission="['set-del']" @click="batchDel"
+        ><i class="el-icon-delete"></i> 删除</el-button
+      >
     </div>
 
     <div class="table-main">
@@ -63,16 +67,17 @@
           <template slot-scope="scope">
             <el-button
               size="mini"
+              type="primary"
               v-permission="['set-edit']"
               @click="handleEdit(scope.$index, scope.row)"
-              >编辑</el-button
+              ><i class="el-icon-edit"></i> 编辑</el-button
             >
             <el-button
               size="mini"
               type="danger"
               v-permission="['set-del']"
               @click="handleDelete(scope.$index, scope.row)"
-              >删除</el-button
+              ><i class="el-icon-delete"></i> 删除</el-button
             >
           </template>
         </el-table-column>
@@ -96,7 +101,7 @@
       width="30%"
       :before-close="handleClose"
     >
-      <el-form ref="form" :model="form" label-width="80px">
+      <el-form ref="form" :model="form" label-width="120px">
         <el-form-item label="运营位名称">
           <el-input v-model="form.name"></el-input>
         </el-form-item>
@@ -110,15 +115,18 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button @click="dialogVisible = false">
+          <i class="el-icon-close"></i> 取 消</el-button
+        >
+        <el-button type="primary" @click="submit">
+          <i class="el-icon-check"></i> 确 定</el-button
+        >
       </span>
     </el-dialog>
   </div>
 </template>
 <script>
-import { findAll, create, updata, del, batchDel } from "@/api/webset.js";
-import qs from "query-string";
+import * as api from "@/api/webset.js";
 export default {
   data() {
     return {
@@ -135,13 +143,6 @@ export default {
       // 0代表新增操作,1代码修改操作
       submitState: 0,
       tableData: [
-        {
-          id: "1",
-          name: "我曾",
-          author: "隔壁老樊",
-          url: "www.baidu.com",
-          updatedAt: "2021-03-02 23:04:12",
-        },
       ],
       currentPage: 1,
       pageSize: 10,
@@ -154,57 +155,28 @@ export default {
     this.findAll();
   },
   methods: {
-    // 构建表格提示标签
-    renderHeader(h, { column }) {
-      return h(
-        "div",
-        {
-          style: "display:flex;margin:auto;",
-        },
-        [
-          h("span", column.label),
-          // 直接用组件就完事了
-          h("prompt-message", {
-            props: {
-              messages: "文件位于服务器上面的地址",
-            },
-          }),
-        ]
-      );
-    },
-    Tableformatter(row, column, cellValue, index) {
-      if (cellValue == "" || cellValue == null || cellValue == undefined) {
-        return "字段为空值";
-      } else {
-        return cellValue;
-      }
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
-          files.length + fileList.length
-        } 个文件`
-      );
-    },
-    handleSuccess(response, file, fileList) {
-      let { code } = response;
-      if (code == "200") {
-        this.form.pic = response.url;
-        this.$message("图片上传成功");
-      }
-    },
-
-    // 按照固定条件搜索
-    searchList() {
-      let msg = JSON.stringify({
+    // ==================== 数据查询 ====================
+    /**
+     * 查询网站设置列表（初始化/分页切换/搜索）
+     * @param {Object} searchParams - 搜索参数（可选）
+     */
+    findAll(searchParams = {}) {
+      const params = {
         currentPage: this.currentPage,
         pageSize: this.pageSize,
         name: this.search.name,
-        startTime: this.search.time[0],
-        endTime: this.search.time[1],
-      });
+        ...searchParams,
+      };
+
+      // 如果有时间范围搜索条件，添加到参数中
+      if (this.search.time && this.search.time.length === 2) {
+        params.startTime = this.search.time[0];
+        params.endTime = this.search.time[1];
+      }
+
+      let msg = JSON.stringify(params);
       return new Promise((resolve, reject) => {
-        findAll(msg).then((res) => {
+        api.findAll(msg).then((res) => {
           let { data, code } = res;
           if (code == "200") {
             let new_list = data.rows.map((el, index) => {
@@ -217,17 +189,119 @@ export default {
             });
             this.tableData = new_list;
             this.total = data.count;
+            resolve();
           } else {
             this.$message("获取分页失败");
+            reject();
           }
         });
       });
     },
-    // 多选操作
+
+    /**
+     * 按照条件搜索网站设置（复用 findAll 方法）
+     */
+    searchList() {
+      this.currentPage = 1; // 搜索时重置到第一页
+      this.findAll();
+    },
+
+    // ==================== 表格操作 ====================
+    /**
+     * 表格多选操作
+     */
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
-    // 批量删除
+
+    /**
+     * 分页切换
+     */
+    currentChange(page) {
+      this.currentPage = page;
+      this.findAll();
+    },
+
+    /**
+     * 当前页改变（未使用）
+     */
+    handleCurrentChange() {},
+
+    /**
+     * 表格数据格式化（未使用）
+     */
+    Tableformatter(row, column, cellValue, index) {
+      if (cellValue == "" || cellValue == null || cellValue == undefined) {
+        return "字段为空值";
+      } else {
+        return cellValue;
+      }
+    },
+
+    /**
+     * 构建表格提示标签（未使用）
+     */
+    renderHeader(h, { column }) {
+      return h(
+        "div",
+        {
+          style: "display:flex;margin:auto;",
+        },
+        [
+          h("span", column.label),
+          h("prompt-message", {
+            props: {
+              messages: "文件位于服务器上面的地址",
+            },
+          }),
+        ]
+      );
+    },
+
+    // ==================== 网站设置管理（增删改） ====================
+    /**
+     * 打开新增网站设置对话框
+     */
+    handleAdd() {
+      this.cleanRow();
+      this.dialogVisible = true;
+      this.submitState = 0;
+    },
+
+    /**
+     * 打开编辑网站设置对话框
+     */
+    handleEdit(index, row) {
+      this.dialogVisible = true;
+      this.submitState = 1;
+      let new_row = Object.assign({}, row);
+      this.form.id = new_row.id;
+      this.form.name = new_row.name;
+      this.form.configs = new_row.configs;
+    },
+
+    /**
+     * 删除单个网站设置
+     */
+    handleDelete(index, row) {
+      let msg_del = JSON.stringify({
+        id: row.id,
+      });
+
+      api.del(msg_del).then((res) => {
+        let { code } = res;
+        if (code == "200") {
+          this.dialogVisible = false;
+          this.findAll();
+        } else {
+          this.$message("删除失败");
+        }
+      });
+    },
+
+    /**
+     * 批量删除网站设置
+     */
     batchDel() {
       let msg_del_before = this.multipleSelection.map((el, index) => {
         return {
@@ -241,7 +315,7 @@ export default {
       let msg = JSON.stringify({
         batchList: msg_del_after,
       });
-      batchDel(msg).then((res) => {
+      api.batchDel(msg).then((res) => {
         let { code } = res;
         if (code == "200") {
           this.findAll();
@@ -250,45 +324,117 @@ export default {
         }
       });
     },
-    findAll() {
-      let msg = JSON.stringify({
-        currentPage: this.currentPage,
-        pageSize: this.pageSize,
+
+    /**
+     * 提交表单（新增/编辑）
+     */
+    submit() {
+      // 表单验证
+      if (!this.validateForm()) {
+        return;
+      }
+
+      // 根据不同状态执行不同操作
+      const submitHandlers = {
+        0: this.submitCreate,  // 新增
+        1: this.submitUpdate,  // 编辑
+      };
+
+      const handler = submitHandlers[this.submitState];
+      if (handler) {
+        handler();
+      } else {
+        this.$message("操作异常");
+      }
+    },
+
+    /**
+     * 表单验证
+     */
+    validateForm() {
+      if (!this.form.name) {
+        this.$message.warning("请输入运营位名称");
+        return false;
+      }
+      return true;
+    },
+
+    /**
+     * 提交新增
+     */
+    submitCreate() {
+      const msg = JSON.stringify({
+        name: this.form.name,
+        configs: this.form.configs,
       });
-      return new Promise((resolve, reject) => {
-        findAll(msg).then((res) => {
-          let { data, code } = res;
-          if (code == "200") {
-            let new_list = data.rows.map((el, index) => {
-              return {
-                id: el.id,
-                name: el.name,
-                configs: el.configs,
-                updatedAt: el.updatedAt,
-              };
-            });
-            this.tableData = new_list;
-            this.total = data.count;
+
+      api.create(msg)
+        .then((res) => {
+          if (res.code === "200") {
+            this.$message.success("新增成功");
+            this.dialogVisible = false;
+            this.findAll();
           } else {
-            this.$message("获取分页失败");
+            this.$message.error(res.msg || "新增失败");
           }
+        })
+        .catch((err) => {
+          this.$message.error("新增失败：" + (err.message || "未知错误"));
         });
+    },
+
+    /**
+     * 提交编辑
+     */
+    submitUpdate() {
+      const msg = JSON.stringify({
+        id: this.form.id,
+        name: this.form.name,
+        configs: this.form.configs,
       });
+
+      api.updata(msg)
+        .then((res) => {
+          if (res.code === "200") {
+            this.$message.success("修改成功");
+            this.dialogVisible = false;
+            this.findAll();
+          } else {
+            this.$message.error(res.msg || "修改失败");
+          }
+        })
+        .catch((err) => {
+          this.$message.error("修改失败：" + (err.message || "未知错误"));
+        });
     },
-    handleAdd() {
-      this.cleanRow();
-      this.dialogVisible = true;
-      this.submitState = 0;
+
+    // ==================== 文件上传（未使用） ====================
+    /**
+     * 超出文件数量限制提示
+     */
+    handleExceed(files, fileList) {
+      this.$message.warning(
+        `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
+          files.length + fileList.length
+        } 个文件`
+      );
     },
-    // 进行编辑
-    handleEdit(index, row) {
-      this.dialogVisible = true;
-      this.submitState = 1;
-      let new_row = Object.assign({}, row);
-      this.form.id = new_row.id;
-      this.form.name = new_row.name;
-      this.form.configs = new_row.configs;
+
+    /**
+     * 文件上传成功回调
+     */
+    handleSuccess(response, file, fileList) {
+      let { code } = response;
+      if (code == "200") {
+        this.form.pic = response.url;
+        this.$message.success("图片上传成功");
+      }
     },
+
+    // ==================== 辅助方法 ====================
+    /**
+     * 清空表单数据
+     */
     cleanRow() {
       for (let key in this.form) {
         if (key == "fileList") {
@@ -298,69 +444,12 @@ export default {
         }
       }
     },
-    // 进行删除
-    handleDelete(index, row) {
-      let msg_del = JSON.stringify({
-        id: row.id,
-      });
-      del(msg_del).then((res) => {
-        let { code } = res;
-        if (code == "200") {
-          this.dialogVisible = false;
-          // 刷新表格
-          this.findAll();
-        } else {
-          this.$message("删除失败");
-        }
-      });
-    },
-    // 当前页发生改变
-    handleCurrentChange() {},
-    submit() {
-      switch (this.submitState) {
-        case 0:
-          let msg_create = JSON.stringify({
-            name: this.form.name,
-            configs: this.form.configs,
-          });
-          create(msg_create).then((res) => {
-            let { date, code } = res;
-            if (code == "200") {
-              this.dialogVisible = false;
-              // 刷新表格
-              this.findAll();
-            } else {
-              this.$message("新增失败");
-            }
-          });
-          break;
-        case 1:
-          let msg_updata = JSON.stringify({
-            id: this.form.id,
-            name: this.form.name,
-            configs: this.form.configs,
-          });
-          updata(msg_updata).then((res) => {
-            let { date, code } = res;
-            if (code == "200") {
-              this.dialogVisible = false;
-              // 刷新表格
-              this.findAll();
-            } else {
-              this.$message("修改失败");
-            }
-          });
-          break;
-        default:
-          this.$message("操作异常");
-      }
-    },
+
+    /**
+     * 关闭对话框
+     */
     handleClose() {
       this.dialogVisible = false;
-    },
-    currentChange(page) {
-      this.currentPage = page;
-      this.findAll();
     },
   },
 };
@@ -368,7 +457,7 @@ export default {
 <style lang="scss" scoped>
 .table-wrap {
   width: 100%;
-  padding: 30px 40px;
+  padding: 30px 15px;
   color: #555555;
   background-color: #fff;
 

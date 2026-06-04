@@ -36,7 +36,7 @@ import Search from "@/components/HeaderSearch";
 
 // 配置预览图片
 
-import imgUrl from "@/utils/setDeafult.js";
+import imgUploadApi from "@/utils/ossUpload.js";
 
 export default {
   components: {

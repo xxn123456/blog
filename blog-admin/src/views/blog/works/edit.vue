@@ -131,8 +131,8 @@ export default {
         .then((res) => {
           const { code, url } = res;
           if (code == "200") {
-            let new_imgUrl = url;
-            this.$refs.md.$img2Url(pos, new_imgUrl);
+            let new_imgUploadApi = url;
+            this.$refs.md.$img2Url(pos, new_imgUploadApi);
           }
         })
         .catch((error) => {

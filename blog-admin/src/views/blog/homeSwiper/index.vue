@@ -1,9 +1,12 @@
 <template>
   <div class="table-wrap">
     <div class="table-handle-btns">
-      <el-button type="primary" v-permission="['swiper-add']" @click="handleAdd">新增</el-button>
-      <el-button v-permission="['swiper-del']" @click="batchDel">批量删除</el-button>
-      <!-- <el-button>导出</el-button> -->
+      <el-button type="primary" v-permission="['swiper-add']" @click="handleAdd"
+        ><i class="el-icon-plus"></i> 新增</el-button
+      >
+      <el-button type="danger" v-permission="['swiper-del']" @click="batchDel"
+        ><i class="el-icon-delete"></i> 批量删除</el-button
+      >
     </div>
 
     <div class="table-main">
@@ -42,15 +45,19 @@
 
         <el-table-column label="操作" align="center" width="300">
           <template slot-scope="scope">
-            <el-button size="mini" v-permission="['swiper-edit']" @click="handleEdit(scope.$index, scope.row)"
-              >编辑</el-button
+            <el-button
+              size="mini"
+              type="primary"
+              v-permission="['swiper-edit']"
+              @click="handleEdit(scope.$index, scope.row)"
+              ><i class="el-icon-edit"></i> 编辑</el-button
             >
             <el-button
               size="mini"
               type="danger"
               v-permission="['swiper-del']"
               @click="handleDelete(scope.$index, scope.row)"
-              >删除</el-button
+              ><i class="el-icon-delete"></i> 删除</el-button
             >
           </template>
         </el-table-column>
@@ -103,24 +110,19 @@
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submit">确 定</el-button>
+        <el-button @click="dialogVisible = false">
+          <i class="el-icon-close"></i> 取 消</el-button
+        >
+        <el-button type="primary" @click="submit">
+          <i class="el-icon-check"></i> 确 定</el-button
+        >
       </span>
     </el-dialog>
   </div>
 </template>
 <script>
-import {
-  findAll,
-  create,
-  update,
-  del,
-  batchDel,
-  queryCarousel,
-  batchUpdate,
-} from "@/api/carousel.js";
-import qs from "query-string";
-import IMGURL from "@/utils/setDeafult.js";
+import * as api from "@/api/carousel.js";
+import imgUploadApi from "@/utils/ossUpload.js";
 export default {
   data() {
     return {
@@ -159,16 +161,73 @@ export default {
   },
   filters: {
     handelCarouselImg(val) {
-      return IMGURL + val;
+      return imgUploadApi + val;
     },
   },
   computed: {
     upApi() {
-      return IMGURL + "/upload/oss";
+      return imgUploadApi + "/upload/oss";
     },
   },
   methods: {
-    // 构建表格提示标签
+    // ==================== 数据查询 ====================
+    /**
+     * 查询轮播图列表
+     */
+    findAll() {
+      let msg = JSON.stringify({});
+      return new Promise((resolve, reject) => {
+        api.findAll(msg).then((res) => {
+          let { data, code } = res;
+          if (code == "200") {
+            let new_list = data.rows.map((el, index) => {
+              let pic = el.pic;
+              if(!pic){
+                pic = require("@/assets/404_images/1.png");
+              }
+              return {
+                id: el.id,
+                pic: el.pic,
+                url: el.url || "-",
+                title: el.title,
+                active: el.active,
+                userId: el.userId,
+                updatedAt: el.updatedAt,
+              };
+            });
+            this.tableData = new_list;
+            this.total = data.count;
+            resolve();
+          } else {
+            this.$message("获取分页失败");
+            reject();
+          }
+        });
+      });
+    },
+
+    // ==================== 表格操作 ====================
+    /**
+     * 表格多选操作
+     */
+    handleSelectionChange(val) {
+      this.multipleSelection = val;
+    },
+
+    /**
+     * 表格数据格式化（未使用）
+     */
+    Tableformatter(row, column, cellValue, index) {
+      if (cellValue == "" || cellValue == null || cellValue == undefined) {
+        return "字段为空值";
+      } else {
+        return cellValue;
+      }
+    },
+
+    /**
+     * 构建表格提示标签（未使用）
+     */
     renderHeader(h, { column }) {
       return h(
         "div",
@@ -178,7 +237,6 @@ export default {
         },
         [
           h("span", column.label),
-          // 直接用组件就完事了
           h("prompt-message", {
             props: {
               messages:
@@ -188,19 +246,58 @@ export default {
         ]
       );
     },
-    Tableformatter(row, column, cellValue, index) {
-      if (cellValue == "" || cellValue == null || cellValue == undefined) {
-        return "字段为空值";
-      } else {
-        return cellValue;
-      }
+
+    // ==================== 轮播图管理（增删改） ====================
+    /**
+     * 打开新增轮播图对话框
+     */
+    handleAdd() {
+      this.cleanRow();
+      this.dialogVisible = true;
+      this.submitState = 0;
     },
 
-    // 多选操作
-    handleSelectionChange(val) {
-      this.multipleSelection = val;
+    /**
+     * 打开编辑轮播图对话框
+     */
+    handleEdit(index, row) {
+      this.dialogVisible = true;
+      this.submitState = 1;
+      let new_row = Object.assign({}, row);
+      this.form.id = new_row.id;
+      this.form.title = new_row.title;
+      this.form.url = new_row.url;
+      this.form.pic = new_row.pic;
+      this.form.active = new_row.active;
+      this.form.fileList = [
+        {
+          name: new_row.pic,
+          url: new_row.pic,
+        },
+      ];
     },
-    // 批量删除
+
+    /**
+     * 删除单个轮播图
+     */
+    handleDelete(index, row) {
+      let msg_del = JSON.stringify({
+        id: row.id,
+      });
+      api.del(msg_del).then((res) => {
+        let { code } = res;
+        if (code == "200") {
+          this.dialogVisible = false;
+          this.findAll();
+        } else {
+          this.$message("删除失败");
+        }
+      });
+    },
+
+    /**
+     * 批量删除轮播图
+     */
     batchDel() {
       let msg_del_before = this.multipleSelection.map((el, index) => {
         return {
@@ -214,7 +311,7 @@ export default {
       let msg = JSON.stringify({
         batchList: msg_del_after,
       });
-      batchDel(msg).then((res) => {
+      api.batchDel(msg).then((res) => {
         let { code } = res;
         if (code == "200") {
           this.findAll();
@@ -223,36 +320,135 @@ export default {
         }
       });
     },
-    findAll() {
-      let msg = JSON.stringify({});
+
+    /**
+     * 提交表单（新增/编辑）
+     */
+    async submit() {
+      // 表单验证
+      if (!this.validateForm()) {
+        return;
+      }
+
+      // 根据不同状态执行不同操作
+      const submitHandlers = {
+        0: this.submitCreate,  // 新增
+        1: this.submitUpdate,  // 编辑
+      };
+
+      const handler = submitHandlers[this.submitState];
+      if (handler) {
+        await handler();
+      } else {
+        this.$message("操作异常");
+      }
+    },
+
+    /**
+     * 表单验证
+     */
+    validateForm() {
+      if (!this.form.title) {
+        this.$message.warning("请输入轮播标题");
+        return false;
+      }
+      if (!this.form.pic) {
+        this.$message.warning("请上传轮播图片");
+        return false;
+      }
+      return true;
+    },
+
+    /**
+     * 验证轮播次序是否已存在
+     */
+    variyActive() {
       return new Promise((resolve, reject) => {
-        findAll(msg).then((res) => {
-          let { data, code } = res;
+        let msg = JSON.stringify({
+          active: this.form.active,
+        });
+        api.queryCarousel(msg).then((respone) => {
+          let { code, state } = respone;
           if (code == "200") {
-            let new_list = data.rows.map((el, index) => {
-              return {
-                id: el.id,
-                pic: el.pic,
-                url: el.url||"-",
-                title: el.title,
-                active: el.active,
-                userId: el.userId,
-                updatedAt: el.updatedAt,
-              };
-            });
-            this.tableData = new_list;
-            this.total = data.count;
-          } else {
-            this.$message("获取分页失败");
+            resolve(state);
           }
         });
       });
     },
-    handleAdd() {
-      this.cleanRow();
-      this.dialogVisible = true;
-      this.submitState = 0;
+
+    /**
+     * 提交新增
+     */
+    async submitCreate() {
+      // 验证轮播次序
+      let hasItemActive;
+      await this.variyActive().then((res) => {
+        hasItemActive = res;
+      });
+
+      if (hasItemActive == "0") {
+        const msg = JSON.stringify({
+          pic: this.form.pic,
+          title: this.form.title,
+          url: this.form.url,
+          userId: this.form.userId,
+          active: this.form.active,
+        });
+
+        api.create(msg)
+          .then((res) => {
+            let { data, code, des } = res;
+            if (code == "200") {
+              this.$message.success("新增成功");
+              this.dialogVisible = false;
+              this.findAll();
+            } else if (code == "401") {
+              this.$message.error("超过最大轮播图限制");
+              this.dialogVisible = false;
+            } else {
+              this.$message.error(des || "新增失败");
+            }
+          })
+          .catch((err) => {
+            this.$message.error("新增失败：" + (err.message || "未知错误"));
+          });
+      } else {
+        this.$message.warning("当前次序已经存在");
+      }
     },
+
+    /**
+     * 提交编辑
+     */
+    submitUpdate() {
+      const msg = JSON.stringify({
+        id: this.form.id,
+        pic: this.form.pic,
+        title: this.form.title,
+        url: this.form.url,
+        userId: this.form.userId,
+        active: this.form.active,
+      });
+
+      api.update(msg)
+        .then((res) => {
+          if (res.code === "200") {
+            this.$message.success("修改成功");
+            this.dialogVisible = false;
+            this.findAll();
+          } else {
+            this.$message.error(res.msg || "修改失败");
+          }
+        })
+        .catch((err) => {
+          this.$message.error("修改失败：" + (err.message || "未知错误"));
+        });
+    },
+
+    // ==================== 文件上传 ====================
+    /**
+     * 超出文件数量限制提示
+     */
     handleExceed(files, fileList) {
       this.$message.warning(
         `当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
@@ -260,31 +456,22 @@ export default {
         } 个文件`
       );
     },
+
+    /**
+     * 文件上传成功回调
+     */
     handleSuccess(response, file, fileList) {
       let { code } = response;
       if (code == "200") {
         this.form.pic = response.url;
-        this.$message("图片上传成功");
+        this.$message.success("图片上传成功");
       }
     },
 
-    // 进行编辑
-    handleEdit(index, row) {
-      console.log("表单选项",row)
-      this.dialogVisible = true;
-      this.submitState = 1;
-      let new_row = Object.assign({}, row);
-      this.form.id = new_row.id;
-      this.form.title = new_row.title;
-      this.form.url = new_row.url;
-      this.form.pic = new_row.pic;
-      this.form.fileList = [
-        {
-          name:new_row.pic,
-          url:new_row.pic
-        }
-      ]
-    },
+    // ==================== 辅助方法 ====================
+    /**
+     * 清空表单数据
+     */
     cleanRow() {
       for (let key in this.form) {
         if (key == "fileList") {
@@ -294,103 +481,17 @@ export default {
         }
       }
     },
-    // 进行删除
-    handleDelete(index, row) {
-      let msg_del = JSON.stringify({
-        id: row.id,
-      });
-      del(msg_del).then((res) => {
-        let { code } = res;
-        if (code == "200") {
-          this.dialogVisible = false;
-          // 刷新表格
-          this.findAll();
-        } else {
-          this.$message("删除失败");
-        }
-      });
-    },
-    variyActive() {
-      return new Promise((resolve, reject) => {
-        let msg = JSON.stringify({
-          active: this.form.active,
-        });
-        queryCarousel(msg).then((respone) => {
-          let { code, state } = respone;
-          if (code == "200") {
-            resolve(state);
-          }
-        });
-      });
-    },
 
-    async submit() {
-      switch (this.submitState) {
-        case 0:
-          let hasItemActive;
-          await this.variyActive().then((res) => {
-            console.log("res", res);
-            hasItemActive = res;
-          });
-          console.log("获取的状态", hasItemActive);
-
-          if (hasItemActive == "0") {
-            let msg_create = JSON.stringify({
-              pic: this.form.pic,
-              title: this.form.title,
-              url: this.form.url,
-              userId: this.form.userId,
-              active: this.form.active,
-            });
-
-            create(msg_create).then((res) => {
-              let { data, code, des } = res;
-              if (code == "200") {
-                this.dialogVisible = false;
-                // 刷新表格
-                this.findAll();
-              } else {
-                this.$message("新增失败");
-              }
-              if (code == "401") {
-                this.dialogVisible = false;
-                // 刷新表格
-                this.$message("超过最大轮播图限制");
-              }
-            });
-          } else {
-            this.$message("当前次序已经存在");
-          }
-
-          break;
-        case 1:
-          let msg_update = JSON.stringify({
-            id: this.form.id,
-            pic: this.form.pic,
-            title: this.form.title,
-            url: this.form.url,
-            userId: this.form.userId,
-            active: this.form.active,
-          });
-
-          update(msg_update).then((res) => {
-            let { data, code } = res;
-            if (code == "200") {
-              this.dialogVisible = false;
-              // 刷新表格
-              this.findAll();
-            } else {
-              this.$message("修改失败");
-            }
-          });
-          break;
-        default:
-          this.$message("操作异常");
-      }
-    },
+    /**
+     * 关闭对话框
+     */
     handleClose() {
       this.dialogVisible = false;
     },
+
+    /**
+     * 轮播次序改变
+     */
     handleChange(val) {
       this.form.active = val;
     },
@@ -400,7 +501,7 @@ export default {
 <style lang="scss" scoped>
 .table-wrap {
   width: 100%;
-  padding: 30px 40px;
+  padding: 30px 15px;
   color: #555555;
   background-color: #fff;
   /deep/ .el-upload-list__item-thumbnail{
