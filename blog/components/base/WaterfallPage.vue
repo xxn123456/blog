@@ -4,21 +4,33 @@
       <span
         v-for="(item, index) in tags"
         :key="item.value"
-        :style="tagActive == index ? 'color:#0088f5;' : ''"
+        :class="['tag-item', { 'tag-active': tagActive === index }]"
         @click="changeTag(index)"
-        >{{ item.label }}</span
-      >
+      >{{ item.label }}</span>
     </div>
-    <div class="column">
-      <div class="column-item" v-for="item in lists" :key="item.index">
+    <div class="column-container">
+      <div 
+        class="column" 
+        v-for="(col, colIndex) in columns" 
+        :key="colIndex"
+      >
         <div
-          class="column-item-card-1 column-item-gaid"
+          class="column-item"
+          v-for="item in col"
+          :key="item.id"
           @click="toDetail(item)"
+          role="button"
+          :aria-label="`查看详情：${item.title}`"
         >
           <div class="type-1">
             <span class="iconfont icon-lianjie Icon"></span>{{ item.tag }}
           </div>
-          <img v-if="item.coverBg" class="coverBg" :src="item.coverBg" alt="" />
+          <img 
+            v-if="item.coverBg" 
+            class="coverBg" 
+            :src="item.coverBg" 
+            :alt="item.title" 
+          />
           <div class="title">{{ item.title }}</div>
           <div class="des">查看详情↓</div>
         </div>
@@ -26,14 +38,17 @@
     </div>
 
     <div class="loading" v-if="loading">加载中...</div>
+    <div class="no-more" v-if="noMore && !loading">没有更多数据了</div>
   </div>
 </template>
 <script>
 import { queryWorks } from "@/api/home.js";
+
 export default {
   data() {
     return {
-      lists: [],
+      columns: [[], [], []], // 三列数据
+      columnHeight: [0, 0, 0], // 三列高度
       tagActive: 0,
       tags: [
         {
@@ -54,6 +69,9 @@ export default {
         },
       ],
       loading: false,
+      currentPage: 1,
+      noMore: false, // 是否还有更多数据
+      scrollTimer: null, // 滚动防抖定时器
     };
   },
   components: {},
@@ -61,75 +79,124 @@ export default {
     this.queryWorks();
     window.addEventListener("scroll", this.handleScroll);
   },
+  beforeDestroy() {
+    // 组件销毁前移除滚动事件监听
+    window.removeEventListener("scroll", this.handleScroll);
+    // 清除定时器
+    if (this.scrollTimer) {
+      clearTimeout(this.scrollTimer);
+    }
+  },
   methods: {
     changeTag(tag) {
       this.tagActive = tag;
+      // 重置数据
+      this.currentPage = 1;
+      this.columns = [[], [], []];
+      this.columnHeight = [0, 0, 0];
+      this.noMore = false;
       this.queryWorks();
     },
     queryWorks() {
       const tag = this.tags[this.tagActive].label;
       let params = {
         tag: tag,
+        currentPage: this.currentPage,
+        pageSize: 20,
       };
-      queryWorks(params).then((res) => {
-        if (res.code == 200) {
-          let data = res.data.rows;
-          this.lists = data;
+      
+      this.loading = true;
+      queryWorks(params)
+        .then((res) => {
+          if (res.code == 200) {
+            let data = res.data.rows || [];
+            if (data.length > 0) {
+              this.distributeToColumns(data);
+              this.currentPage += 1;
+            } else {
+              this.noMore = true;
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("查询作品失败:", error);
+          this.loading = false;
+        })
+        .finally(() => {
+          this.loading = false;
+        });
+    },
+    distributeToColumns(data) {
+      // 将数据分配到最矮的列
+      data.forEach((item) => {
+        // 找到最矮的列
+        let minHeight = this.columnHeight[0];
+        let minIndex = 0;
+        for (let i = 1; i < 3; i++) {
+          if (this.columnHeight[i] < minHeight) {
+            minHeight = this.columnHeight[i];
+            minIndex = i;
+          }
         }
+        // 添加到最矮的列
+        this.columns[minIndex].push(item);
+        // 估算高度：图片140px + 其他内容约110px = 250px
+        this.columnHeight[minIndex] += 250;
       });
     },
     toDetail(item) {
-      // 跳转
+      // 打开作品详情页
       const origin = "http://blog.shutiaogege.top";
       const openUrl = `${origin}/developDetail?id=${item.id}`;
       window.open(openUrl, "_blank");
     },
-    initWater() {
-      this.lists.forEach((el, index) => {
-        let min = Math.min(
-          this.columnHeight[0],
-          this.columnHeight[1],
-          this.columnHeight[2]
-        );
-        if (this.columnHeight[0] == min) {
-          this.columns[0].push(el);
-          this.columnHeight[0] += el.height;
-        } else if (this.columnHeight[1] == min) {
-          this.columns[1].push(el);
-          this.columnHeight[1] += el.height;
-        } else {
-          this.columns[2].push(el);
-          this.columnHeight[2] += el.height;
+    handleScroll() {
+      // 防抖处理
+      if (this.scrollTimer) {
+        clearTimeout(this.scrollTimer);
+      }
+
+      this.scrollTimer = setTimeout(() => {
+        // 判断是否到达底部
+        const innerHeight = window.innerHeight;
+        const scrollTop = document.documentElement.scrollTop;
+        const scrollHeight = document.documentElement.scrollHeight;
+        if (
+          scrollTop + innerHeight >= scrollHeight - 100 &&
+          !this.loading &&
+          !this.noMore
+        ) {
+          this.loadMore();
         }
-      });
+      }, 300);
     },
-    async handleScroll() {
-      const innerHeight = window.innerHeight; // 可视窗口高度
-      const scrollTop = document.documentElement.scrollTop; // 滚动高度
-      const scrollHeight = document.documentElement.scrollHeight; // 页面总高度
-      if (scrollTop + innerHeight >= scrollHeight) {
-        this.currentPage += 1;
-        let msg = JSON.stringify({
-          pageSize: "20",
-          currentPage: this.currentPage,
-        });
-        this.loading = true;
-        queryWorks(msg).then((res) => {
+    loadMore() {
+      const tag = this.tags[this.tagActive].label;
+      let params = {
+        tag: tag,
+        currentPage: this.currentPage,
+        pageSize: 20,
+      };
+
+      this.loading = true;
+      queryWorks(params)
+        .then((res) => {
           if (res.code == 200) {
-            let data = res.data.rows;
-            this.loading = false;
-            // this.lists = this.lists.concat(data)
+            let data = res.data.rows || [];
             if (data.length > 0) {
-              this.columns = [[], [], []];
-              this.columnHeight = [0, 0, 0];
-              data.forEach((item) => {
-                this.lists.push(item);
-              });
-              this.initWater();
+              this.distributeToColumns(data);
+              this.currentPage += 1;
+            } else {
+              this.noMore = true;
             }
           }
+        })
+        .catch((error) => {
+          console.error("加载更多作品失败:", error);
+        })
+        .finally(() => {
+          this.loading = false;
         });
-      }
     },
   },
 };
@@ -137,6 +204,7 @@ export default {
 <style lang="scss" scoped>
 .water-warp {
   width: 100%;
+  
   .tags {
     width: 100%;
     background-color: #fff;
@@ -145,67 +213,98 @@ export default {
     padding: 5px;
     box-sizing: border-box;
     cursor: pointer;
-    span {
+    
+    .tag-item {
       display: inline-block;
       margin-left: 15px;
       margin-right: 15px;
+      transition: color 0.3s;
+    }
+    
+    .tag-active {
+      color: #0088f5;
+      font-weight: 600;
     }
   }
-  .loading {
+  
+  .loading,
+  .no-more {
     width: 100%;
     height: 50px;
-    position: fixed;
+    line-height: 50px;
+    text-align: center;
     font-size: 12px;
+    color: #999;
   }
-  .column {
+  
+  .column-container {
     width: 100%;
     display: flex;
     flex-direction: row;
-    justify-content: flex-start;
-    gap: 10px;
+    justify-content: space-between;
     margin-top: 10px;
-    .column-item {
-      width: 286.6px;
-      background-color: #fff;
-      border-radius: 4px;
-      .column-item-card-1 {
-        height: 280px;
-        overflow: hidden;
-        .coverBg{
-          height: 140px;
-          width: auto;
-          margin: 10px 0;
-        }
-      }
-      .type-1 {
+    gap: 10px;
+    
+    .column {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      
+      .column-item {
         width: 100%;
-        text-align: left;
-        height: 40px;
-        line-height: 40px;
-        font-size: 14px;
-        color: #333333;
-        span {
-          margin-right: 4px;
-        }
-      }
-
-      .title {
-        width: 100%;
-        text-align: center;
-        height: 40px;
-        line-height: 40px;
-        font-size: 16px;
-        color: #333333;
-        font-weight: 550;
-      }
-      .des {
-        width: 100%;
-        text-align: center;
-        height: 30px;
-        line-height: 30px;
-        font-size: 12px;
-        color: #666666;
+        background-color: #fff;
+        border-radius: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         cursor: pointer;
+        transition: transform 0.3s, box-shadow 0.3s;
+        overflow: hidden;
+        
+        &:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .type-1 {
+          width: 100%;
+          text-align: left;
+          height: 40px;
+          line-height: 40px;
+          font-size: 14px;
+          color: #333333;
+          padding-left: 10px;
+          
+          span {
+            margin-right: 4px;
+          }
+        }
+        
+        .coverBg {
+          width: 80%;
+          height: 140px;
+          object-fit: cover;
+        }
+        
+        .title {
+          width: 100%;
+          text-align: center;
+          height: 40px;
+          line-height: 40px;
+          font-size: 16px;
+          color: #333333;
+          font-weight: 550;
+        }
+        
+        .des {
+          width: 100%;
+          text-align: center;
+          height: 30px;
+          line-height: 30px;
+          font-size: 12px;
+          color: #666666;
+        }
       }
     }
   }

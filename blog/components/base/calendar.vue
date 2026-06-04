@@ -113,15 +113,13 @@ export default {
   },
 };
 </script>
-
 <style lang="scss" scoped>
 .calendar-box {
   min-height: 264px;
   background-color: #fff;
   padding: 12px;
-  > .months {
+  .months {
     padding: 0;
-
     overflow: hidden;
     display: flex;
     justify-content: space-between;
@@ -131,26 +129,22 @@ export default {
       line-height: 32px;
       text-align: center;
       font-size: 12px;
-
       &.arrow {
         width: 32px;
-
-        //   @include background-transition();
         cursor: pointer;
       }
     }
   }
 
-  > .days,
-  > .weekdays {
+  .days,
+  .weekdays {
     list-style: none;
     padding: 0;
     margin: 0;
     overflow: hidden;
     color: #333333;
     cursor: pointer;
-
-    > li {
+    li {
       width: 40px;
       height: 40px;
       display: block;
@@ -158,40 +152,34 @@ export default {
       text-align: center;
     }
   }
-
-  > .weekdays {
+  .weekdays {
     height: 40px;
     line-height: 40px;
   }
-
-  > .days-loading {
+  .days-loading {
     width: 100%;
     height: 224px;
   }
 
-  > .days {
+  .days {
     min-height: 160px;
     margin-bottom: 0;
     position: relative;
 
-    > li {
+    li {
       width: 40px;
       height: 40px;
       line-height: 40px;
-
-      > .other-month {
-        // opacity: .3;
+      .other-month {
         cursor: initial;
         color: #cfcfcf;
       }
 
-      > .item {
+      .item {
         display: block;
         border-radius: 4px;
-
-        > a {
+        a {
           display: block;
-
           text-decoration: none;
           color: #555555;
           font-weight: 400;

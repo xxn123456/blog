@@ -1,3 +1,11 @@
+// 确保 html 和 body 占满整个屏幕
+html,
+body {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
 .home {
     width: 100%;
     min-height: 100vh;

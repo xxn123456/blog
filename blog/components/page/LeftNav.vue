@@ -15,31 +15,31 @@
         </div>
       </li>
     </ul>
-    <div class="other-link">
+    <nav class="other-link">
       <ul>
         <li>
-          <nuxt-link to="/webLog" class="link" style="color: #fd7515">
-            <span class="nav-link">更新日志</span></nuxt-link
-          >
+          <nuxt-link to="/webLog" class="nav-item link-item log-link">
+            <span class="nav-link">更新日志</span>
+          </nuxt-link>
         </li>
         <li>
-          <a class="link" style="color: red" @click="navClick('', 'outLink')"
-            ><span class="nav-link">友情链接</span
-            ><span class="state">hot</span></a
-          >
+          <a class="nav-item link-item hot-link" @click="handleFriendLink">
+            <span class="nav-link">友情链接</span>
+            <span class="state">hot</span>
+          </a>
         </li>
         <li>
           <a
-            href="http://shutiaogege.top/blog_admin/#/login"
+            :href="adminUrl"
             target="_blank"
-            class="link"
-            style="color: #0088f5"
+            rel="noopener noreferrer"
+            class="nav-item link-item admin-link"
           >
             <span class="nav-link">博客后台</span>
           </a>
         </li>
       </ul>
-    </div>
+    </nav>
   </div>
 </template>
 <script>
@@ -51,6 +51,7 @@ export default {
   data() {
     return {
       cateNames: [],
+      adminUrl: "http://shutiaogege.top/blog_admin/#/login", // 博客后台地址
     };
   },
   computed: {
@@ -59,10 +60,61 @@ export default {
     },
   },
   mounted() {
-    this.queryNavType();
+    this.initCateNames();
     this.creatTextEffect();
   },
   methods: {
+    initCateNames() {
+      // 优先从 sessionStorage 获取
+      const cachedCateNames = sessionStorage.getItem("cateNames");
+      if (cachedCateNames) {
+        try {
+          this.cateNames = JSON.parse(cachedCateNames);
+          this.handleCateNamesLoaded();
+        } catch (e) {
+          console.error("解析缓存的分类数据失败", e);
+          this.queryNavType();
+        }
+      } else {
+        // 从接口获取
+        this.queryNavType();
+      }
+    },
+    handleCateNamesLoaded() {
+      this.cateNames.forEach((item) => {
+        if (this.currentPath == item.leftNavUrl) {
+          this.$store.dispatch("blog/changeLeft", item.id);
+          console.log("当前栏目", item.id);
+          this.$emit("navOk", item.id);
+        }
+      });
+    },
+    queryNavType() {
+      let msg = JSON.stringify({
+        currentPage: 1,
+        pageSize: 20,
+      });
+      getCateName(msg).then((res) => {
+        let { code, data } = res;
+        if (code == "200") {
+          this.cateNames = data.rows;
+          // 保存到 sessionStorage
+          sessionStorage.setItem("cateNames", JSON.stringify(data.rows));
+          this.handleCateNamesLoaded();
+        }
+      });
+    },
+    navClick(item, type) {
+      if (type == "nuxt") {
+        this.$router.push(item.leftNavUrl);
+      }
+    },
+    handleFriendLink() {
+      // 友情链接点击处理 - 可以跳转到友情链接页面或弹窗显示
+      this.$message.info("友情链接功能开发中...");
+      // 如果需要跳转到友情链接页面，可以取消下面的注释
+      // this.$router.push('/friendLinks');
+    },
     creatTextEffect() {
       window.addEventListener("load", function () {
         let body = document.body;
@@ -80,30 +132,6 @@ export default {
           }, 1900);
         });
       });
-    },
-    queryNavType() {
-      let msg = JSON.stringify({
-        currentPage: 1,
-        pageSize: 20,
-      });
-      getCateName(msg).then((res) => {
-        let { code, data } = res;
-        if (code == "200") {
-          this.cateNames = data.rows;
-          this.cateNames.forEach((item) => {
-            if (this.currentPath == item.leftNavUrl) {
-              this.$store.dispatch("blog/changeLeft", item.id);
-              console.log("当前栏目", item.id);
-              this.$emit("navOk", item.id);
-            }
-          });
-        }
-      });
-    },
-    navClick(item, type) {
-      if (type == "nuxt") {
-        this.$router.push(item.leftNavUrl);
-      }
     },
   },
 };
@@ -177,18 +205,13 @@ export default {
         align-items: center;
         font-size: 14px;
         border-bottom: 1px dashed #dadada;
-        a {
-          display: block;
+        .link-item {
           width: 160px;
           height: 42px;
           line-height: 42px;
           margin-bottom: 8px;
           text-decoration: none;
           font-weight: 600;
-          .Icon {
-            margin-right: 12px;
-            margin-left: 30px;
-          }
           .nav-link {
             position: relative;
             left: 30px;
@@ -198,6 +221,16 @@ export default {
             font-size: 12px;
             left: 90px;
           }
+        }
+        // 提取的颜色类
+        .log-link {
+          color: #fd7515;
+        }
+        .hot-link {
+          color: red;
+        }
+        .admin-link {
+          color: #0088f5;
         }
       }
     }

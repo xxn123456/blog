@@ -25,7 +25,7 @@ export default {
   methods: {
     to_search() {
       const origin = window.location.origin;
-      const url = `${origin}/search?about=${this.title}`
+      const url = `${origin}/search?about=${this.title}`;
       window.open(url, "_blank");
     },
   },

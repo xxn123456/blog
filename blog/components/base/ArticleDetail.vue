@@ -23,7 +23,13 @@
       </div>
     </div>
     <div class="open">
-      <div @click="isOpen = !isOpen">展开</div>
+      <div v-if="!isOpen" @click="isOpen = !isOpen">展开</div>
+      <div v-else @click="isOpen = !isOpen">收起</div>
+    </div>
+    <div class="share">
+      <a href="#" v-for="share in shares" :key="share.index">
+        <span class="iconfont" :class="`icon-${share.class}`"></span>
+      </a>
     </div>
     <div class="apply">
       <div class="apply-title">评论（{{ replyTotal }}）</div>
@@ -55,11 +61,6 @@
         />
         <button class="start" @click="replyBlog">回复</button>
       </div>
-    </div>
-    <div class="share">
-      <a href="#" v-for="share in shares" :key="share.index">
-        <span class="iconfont" :class="`icon-${share.class}`"></span>
-      </a>
     </div>
     <div class="about-artcle">
       <ul>
@@ -194,21 +195,6 @@ export default {
       regitDialogVisible: false,
       shares: [
         {
-          name: "微信",
-          class: "weixin",
-          url: () => `/partials/qrcode.html?url=${this.url}`,
-        },
-        {
-          name: "微博",
-          class: "weibo",
-          url: () =>
-            `https://service.weibo.com/share/share.php?url=${
-              this.url
-            }&title=${this.title()}&source=${this.url}&sourceUrl=${
-              this.url
-            }&content=${this.description()}`,
-        },
-        {
           name: "QQ空间",
           class: "qqkongjian",
           url: () =>
@@ -219,20 +205,9 @@ export default {
             }`,
         },
         {
-          name: "豆瓣",
-          class: "douban",
-          url: () =>
-            `https://www.douban.com/recommend/?url=${
-              this.url
-            }&title=${this.title()}`,
-        },
-        {
-          name: "有道笔记",
-          class: "youdaoyunbiji",
-          url: () =>
-            `https://www.evernote.com/clip.action?url=${
-              this.url
-            }&title=${this.title()}`,
+          name: "微信",
+          class: "weixin",
+          url: () => `/partials/qrcode.html?url=${this.url}`,
         },
       ],
     };
@@ -263,9 +238,9 @@ export default {
       getBlogDetail(params).then((res) => {
         let { code, data } = res;
         if (code == "200") {
-          let username = "未知"
-          if(data.user&&data.user.username){
-            username = data.user.username
+          let username = "未知";
+          if (data.user && data.user.username) {
+            username = data.user.username;
           }
           this.blog = {
             id: data.id,
@@ -306,7 +281,7 @@ export default {
           this.loginDialogVisible = false;
           this.getUser();
         } else {
-          this.$alert(`登录失败:${res}`, "登录提示", {
+          this.$alert(`登录失败:${res.msg}`, "登录提示", {
             confirmButtonText: "确定",
             callback: (action) => {},
           });
@@ -455,6 +430,7 @@ export default {
     background-color: #fff;
     margin-top: 10px;
     padding-left: 10px;
+    padding-bottom: 30px;
     box-sizing: border-box;
     .apply-title {
       width: 100%;
@@ -526,7 +502,8 @@ export default {
     background-color: #fff;
     display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: flex-start;
+    gap: 20px;
     a {
       display: inline-block;
       width: 48px;

@@ -49,7 +49,7 @@ import WebTop from "@/components/page/Top.vue";
 import ArticleSwiper from "@/components/base/ArticleSwiper.vue";
 import ArticlePage from "@/components/base/ArticlePage.vue";
 import WebFoot from "@/components/page/Foot.vue";
-import Toop from "@/components/base/Tool.vue";
+import Toop from "@/components/page/Tool.vue";
 import Search from "@/components/base/Search.vue";
 import HotSome from "@/components/base/HotSome.vue";
 import ArticleTag from "@/components/base/Tag.vue";

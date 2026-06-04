@@ -58,6 +58,7 @@ export default {
   justify-content: space-around;
   align-items: center;
   background-color: #fff;
+  cursor: pointer;
   .num {
     display: flex;
     flex-direction: column;

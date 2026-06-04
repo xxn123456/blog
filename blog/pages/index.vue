@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home" v-if="isDesktop=='pc'">
     <div class="head">
       <div class="head-cont">
         <WebTop></WebTop>
@@ -59,24 +59,25 @@
 <script>
 import LeftNav from "@/components/page/LeftNav.vue";
 import WebTop from "@/components/page/Top.vue";
-import AsideAd from "@/components/ad/AsideAd.vue";
 import ArticleSwiper from "@/components/base/ArticleSwiper.vue";
 import Notice from "@/components/base/Notice.vue";
 import HomeAd from "@/components/ad/HomeAd.vue";
 import ArticlePage from "@/components/base/ArticlePage.vue";
 import WebFoot from "@/components/page/Foot.vue";
-import Toop from "@/components/base/Tool.vue";
+import Toop from "@/components/page/Tool.vue";
 import ArticleTotal from "@/components/base/ArticleTotal.vue";
 import Search from "@/components/base/Search.vue";
 import HotSome from "@/components/base/HotSome.vue";
 import RightAd from "@/components/ad/RightAd.vue";
-import Calendar from "@/components/base/calendar.vue";
+import Calendar from "@/components/base/Calendar.vue";
 import ArticleTag from "@/components/base/Tag.vue";
 import { mapState, mapActions } from "vuex";
+import { detectDevice } from "@/utils/navigator.js";
 export default {
   data() {
     return {
       canRun: true,
+      isDesktop: true, // 是否为电脑设备
     };
   },
   computed: {
@@ -87,7 +88,6 @@ export default {
   components: {
     LeftNav,
     WebTop,
-    AsideAd,
     ArticleSwiper,
     Notice,
     HomeAd,
@@ -102,6 +102,13 @@ export default {
     Toop,
   },
   mounted() {
+    const pc = detectDevice();
+    if (pc!="pc") {
+      // 非电脑设备,跳转到移动端提示页面
+      this.$router.replace("/mobile-tip");
+    }
+    console.log("设备类型", pc);
+    this.isDesktop = pc;
     this.getScroll();
   },
   methods: {
@@ -125,9 +132,9 @@ export default {
     },
     navOk() {
       // 导航好了之后，获取文章列表
-      this.$refs.articlePage.getBlog()
-      this.$refs.hotSome.getBlog()
-      this.$refs.articleTotal.getBlogAsy()
+      this.$refs.articlePage.getBlog();
+      this.$refs.hotSome.getBlog();
+      this.$refs.articleTotal.getBlogAsy();
     },
   },
 };

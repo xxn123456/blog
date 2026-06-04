@@ -1,9 +1,6 @@
 import axios from 'axios'
-
 import { getToken } from '@/utils/auth'
-
 axios.defaults.headers.post['Content-Type'] = 'application/json;charset=utf-8'
-
 // create an axios instance
 const service = axios.create({
   baseURL: "http://shutiaogege.top:3000", // url = base url + request url

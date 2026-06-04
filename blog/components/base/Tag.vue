@@ -43,6 +43,7 @@ export default {
   height: 100%;
   padding: 10px;
   background-color: #fff;
+  border-radius: 4px;
   cursor: pointer;
   .art-tag {
     display: inline-flex;

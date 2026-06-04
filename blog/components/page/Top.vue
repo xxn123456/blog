@@ -1,31 +1,52 @@
-
 <template>
   <div class="head-cont">
-    <div class="logo" @click="tohome">
-      <img src="@/static/layout/logo.jpg" alt="" />
+    <div class="logo" @click="tohome" role="button" aria-label="返回首页">
+      <img src="@/static/layout/logo.jpg" alt="博客Logo" />
       <span>久别的博客</span>
     </div>
-    <div class="player" v-show="musicLists.length>0">
+    <div class="player" v-show="musicLists.length > 0">
       <div class="handle-btns">
-        <span class="iconfont icon-houtui Icon" @click="prev"></span>
+        <span
+          class="iconfont icon-houtui Icon"
+          @click="prev"
+          role="button"
+          aria-label="上一曲"
+        ></span>
         <span
           class="iconfont icon-bofang Icon"
           @click="play"
           v-if="isPlay"
+          role="button"
+          aria-label="播放"
         ></span>
-        <span class="iconfont icon-zanting Icon" @click="play" v-else></span>
-        <span class="iconfont icon-qianjin Icon" @click="next"></span>
-        <span class="iconfont icon-jingyin Icon"></span>
+        <span
+          class="iconfont icon-zanting Icon"
+          @click="play"
+          v-else
+          role="button"
+          aria-label="暂停"
+        ></span>
+        <span
+          class="iconfont icon-qianjin Icon"
+          @click="next"
+          role="button"
+          aria-label="下一曲"
+        ></span>
+        <span
+          class="iconfont icon-jingyin Icon"
+          @click="toggleMute"
+          role="button"
+          aria-label="切换静音"
+        ></span>
       </div>
       <div class="music-des">{{ bgText }}</div>
       <audio
-        v-if="musicLists.length>0"
         ref="players"
         :src="bgMusic"
         controls="controls"
         class="play-controls"
       >
-        替代内容
+        您的浏览器不支持音频播放
       </audio>
     </div>
   </div>
@@ -35,73 +56,100 @@ import { queryWebSet } from "@/api/home.js";
 export default {
   data() {
     return {
-      musicLists: [
-  
-      ],
+      musicLists: [],
       bgIndex: 0,
-      bgMusic:"",
+      bgMusic: "",
       bgText: "",
-      isPlay: true,
+      isPlay: true, // true 表示暂停状态，false 表示播放状态
+      isMuted: false, // 静音状态
     };
+  },
+  computed: {
+    currentMusic() {
+      if (this.musicLists.length > 0 && this.musicLists[this.bgIndex]) {
+        return this.musicLists[this.bgIndex];
+      }
+      return null;
+    },
   },
   mounted() {
     this.queryWebSet();
   },
   methods: {
-    tohome(){
-      const origin = window.location.origin;
-      window.location.replace(origin);
+    tohome() {
+      this.$router.push("/");
     },
     queryWebSet() {
-      let msg = JSON.stringify({
+      queryWebSet({
         name: "bg-music",
-        pageSize: "1",
-        currentPage: "1",
-      });
-      queryWebSet(msg).then((res) => {
-        let { data } = res;
-        if (res.code == 200 && data.rows) {
-          this.musicLists = JSON.parse(data.rows[0].configs);
-          this.bgText =this.musicLists[0].bgText;
-          this.bgMusic =this.musicLists[0].bgMusic;
+        pageSize: 1,
+        currentPage: 1,
+      })
+        .then((res) => {
+          let { data } = res;
+          if (res.code == 200 && data.rows && data.rows.length > 0) {
+            try {
+              this.musicLists = JSON.parse(data.rows[0].configs);
+              if (this.musicLists.length > 0) {
+                this.bgText = this.musicLists[0].bgText;
+                this.bgMusic = this.musicLists[0].bgMusic;
+              }
+            } catch (error) {
+              console.error("解析音乐配置失败:", error);
+            }
+          }
+        })
+        .catch((error) => {
+          console.error("查询网站配置失败:", error);
+        });
+    },
+    switchMusic(index) {
+      // 切换音乐的公共方法
+      if (!this.$refs.players) {
+        console.error("音频播放器未初始化");
+        return;
+      }
+      this.bgIndex = index;
+      this.$refs.players.pause();
+      this.bgMusic = this.musicLists[this.bgIndex].bgMusic;
+      this.bgText = this.musicLists[this.bgIndex].bgText;
+      setTimeout(() => {
+        if (this.$refs.players) {
+          this.$refs.players.play();
+          this.isPlay = false; // 播放中
         }
-      });
+      }, 300);
     },
     prev() {
-      console.log("设置上一曲")
-      this.bgIndex = this.bgIndex - 1;
-      if (this.bgIndex < 0) {
-        this.bgIndex = this.musicLists.length - 1;
+      let newIndex = this.bgIndex - 1;
+      if (newIndex < 0) {
+        newIndex = this.musicLists.length - 1;
       }
-      this.$refs.players.pause();
-      this.bgMusic = this.musicLists[this.bgIndex].bgMusic;
-      this.bgText = this.musicLists[this.bgIndex].bgText;
-      setTimeout(() => {
-        this.$refs.players.play();
-        this.isPlay = false;
-      }, 300);
+      this.switchMusic(newIndex);
     },
     next() {
-      console.log("设置下一曲")
-      this.bgIndex = this.bgIndex + 1;
-      if (this.bgIndex >= this.musicLists.length) {
-        this.bgIndex = 0;
+      let newIndex = this.bgIndex + 1;
+      if (newIndex >= this.musicLists.length) {
+        newIndex = 0;
       }
-      this.$refs.players.pause();
-      this.bgMusic = this.musicLists[this.bgIndex].bgMusic;
-      this.bgText = this.musicLists[this.bgIndex].bgText;
-      setTimeout(() => {
-        this.$refs.players.play();
-        this.isPlay = false;
-      }, 300);
+      this.switchMusic(newIndex);
     },
     play() {
+      if (!this.$refs.players) return;
+
       if (this.isPlay) {
+        // 当前是暂停状态，开始播放
         this.$refs.players.play();
       } else {
+        // 当前是播放状态，暂停
         this.$refs.players.pause();
       }
       this.isPlay = !this.isPlay;
+    },
+    toggleMute() {
+      if (!this.$refs.players) return;
+      this.isMuted = !this.isMuted;
+      this.$refs.players.muted = this.isMuted;
     },
   },
 };
@@ -121,7 +169,6 @@ export default {
     align-items: center;
     float: left;
     cursor: pointer;
-
     img {
       height: 30px;
       margin-right: 20px;
@@ -151,7 +198,6 @@ export default {
       height: 22px;
       display: flex;
       flex-direction: row;
-
       span {
         font-size: 12px;
         margin-right: 15px;

@@ -70,7 +70,7 @@ export default {
   color: #666666;
   display: flex;
   flex-direction: row;
-  border-radius: 2px;
+  border-radius: 4px;
   .my-swiper {
     height: 40px;
     margin-left: 8px;

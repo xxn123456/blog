@@ -5,7 +5,7 @@
       <span>{{ title }}</span>
     </div>
     <div class="hot-article" v-if="!load">
-      <ul v-if="hots.length>0">
+      <ul v-if="hots.length > 0">
         <li v-for="(hot, index) in hots" :key="hot.index">
           <nuxt-link :to="'/detail?id=' + hot.id">
             <span class="hot">{{ index + 1 }}</span
@@ -41,7 +41,7 @@ export default {
     return {
       hots: [],
       hotSkes: [{}, {}, {}, {}, {}],
-      load:true
+      load: true,
     };
   },
   computed: {
@@ -51,12 +51,12 @@ export default {
   },
   methods: {
     getBlog() {
-      this.load = true
+      this.load = true;
       let params = {
         currentPage: 1,
-        pageSize:5,
+        pageSize: 5,
         recommend: 1,
-      }
+      };
       if (this.blogStore.leftNav != 1) {
         params.navTypeId = this.blogStore.leftNav;
       }
@@ -65,8 +65,8 @@ export default {
         if (code == "200") {
           setTimeout(() => {
             this.hots = data.rows.slice(0, 9);
-            this.load = false
-          }, 500)
+            this.load = false;
+          }, 500);
         }
       });
     },
@@ -81,7 +81,6 @@ export default {
   font-weight: bold;
   color: #555555;
   background-color: #fff;
-
   .title {
     height: 40px;
     padding-left: 12px;

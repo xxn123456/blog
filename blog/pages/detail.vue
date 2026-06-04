@@ -16,7 +16,7 @@
   </div>
 </template>
 <script>
-import DetailMain from "@/components/content/ArticleDetail.vue";
+import DetailMain from "@/components/base/ArticleDetail.vue";
 import WebTop from "@/components/page/Top.vue";
 import WebFoot from "@/components/page/Foot.vue";
 import { mapActions } from "vuex";

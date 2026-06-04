@@ -32,7 +32,7 @@ import LeftNav from "@/components/page/LeftNav.vue";
 import WebTop from "@/components/page/Top.vue";
 import ArticlePage from "@/components/base/ArticlePage.vue";
 import WebFoot from "@/components/page/Foot.vue";
-import Toop from "@/components/base/Tool.vue";
+import Toop from "@/components/page/Tool.vue";
 import WaterfallPage from "@/components/base/WaterfallPage.vue";
 import { mapState, mapActions } from "vuex";
 import { detectDevice } from "@/utils/navigator.js";
