@@ -1,6 +1,6 @@
 //功能处理
 const userModule = require("../../modules/blog/user.js");
-const userRelationRoleModule = require("../../modules/blog/userRelationRole.js");
+const userRelationModule = require("../../modules/blog/userRelation.js");
 const smsCodeModule = require("../../modules/blog/smsCode.js");
 const jwtUtil = require("../../util/verifyJwt.js");
 const { sendVerificationCode } = require('../../util/email.js');
@@ -23,7 +23,7 @@ class userController {
             throw new HttpException("400", "邮箱验证码错误请重新发送", '');
         }
         if (req.username && req.password) {
-            let query = await userRelationRoleModule.getUserInfo(req.username);
+            let query = await userRelationModule.getUserInfo(req.username);
             if (query) {
                 ctx.body = {
                     code: -1,
@@ -96,7 +96,7 @@ class userController {
             throw new HttpException("400", "用户名或者密码不能为空", '');
         }
         if (req.username && req.password) {
-            const info = await userRelationRoleModule.getUserInfo(req.username);
+            const info = await userRelationModule.getUserInfo(req.username);
             if (info && info.password == req.password) {
                 let token = jwtUtil.getToken(info)
                 ctx.body = {
@@ -117,7 +117,7 @@ class userController {
     static async getUserInfo(ctx) {
         const token = ctx.headers.authorization;
         const result = await jwtUtil.verify(token);
-        let data = await userRelationRoleModule.getUserInfo(result.user);
+        let data = await userRelationModule.getUserInfo(result.user);
         const info = {
             userId: data.id,
             username: data.username,
@@ -182,7 +182,7 @@ class userController {
             if (!req.pageSize) {
                 req.pageSize = 10
             }
-            let data = await userRelationRoleModule.findAllUser(req);
+            let data = await userRelationModule.findAllUser(req);
             ctx.body = {
                 code: 200,
                 msg: '查找所有用户成功',

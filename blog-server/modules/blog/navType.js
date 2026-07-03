@@ -42,8 +42,12 @@ class navTypeModel {
         });
     }
     static async finAllnavType(data) {
-        let offset = data.pageSize * (data.currentPage - 1);
-        let limit = parseInt(data.pageSize);
+        // 优化1：参数验证和默认值，防止 offset 计算出错
+        const currentPage = Math.max(1, parseInt(data.currentPage) || 1);
+        const pageSize = Math.min(100, Math.max(1, parseInt(data.pageSize) || 10));
+        const offset = pageSize * (currentPage - 1);
+        const limit = pageSize;
+        
         let where = {};
         if (data.icon) {
             where["icon"] = data.icon
@@ -54,26 +58,36 @@ class navTypeModel {
         if (data.leftNavUrl) {
             where["leftNavUrl"] = data.leftNavUrl
         }
+        // 优化2：改进时间范围查询，支持单独的开始或结束时间
         if (data.startTime || data.endTime) {
-            where["createdAt"] = {
-                    [Op.between]: [new Date(data.startTime), new Date(data.endTime)]
+            where["createdAt"] = {};
+            if (data.startTime) {
+                where["createdAt"][Op.gte] = new Date(data.startTime);
+            }
+            if (data.endTime) {
+                where["createdAt"][Op.lte] = new Date(data.endTime);
             }
         }
+
         return await navType.findAndCountAll({
             where: where,
             order: [
                 ['id', 'ASC'],
             ],
-            //offet去掉前多少个数据
             offset,
-            //limit每页数据数量
-            limit: limit,
-            distinct:true
-        })
-
-
-
-
+            limit,
+            distinct: true,
+            attributes: [
+                'id',
+                'icon',
+                'categoryName',
+                'leftNavUrl',
+                'createdAt',
+                'updatedAt',
+                // 子查询统计当前导航下的文章数量
+                [Sequelize.literal(`(SELECT COUNT(*) FROM article WHERE article.navTypeId = navType.id)`), 'articleCount']
+            ]
+        });
     }
 
 }

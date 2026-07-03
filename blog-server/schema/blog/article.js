@@ -11,6 +11,10 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             field: 'title'
         },
+        recommend: {
+            type: DataTypes.INTEGER,
+            field: 'recommend'
+        },
         book: {
             type: DataTypes.STRING,
             field: 'book'

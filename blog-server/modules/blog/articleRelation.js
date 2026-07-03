@@ -30,7 +30,7 @@ class ArticleRelationModel {
             where: {
                 id
             },
-            attributes: ['id', 'title', 'book', 'content', 'url', 'visitNum', 'recommend', 'createdAt', 'updatedAt'],
+            attributes: ['id', 'title','recommend', 'book', 'content', 'url', 'visitNum', 'createdAt','updatedAt'],
             include: [{
                 model: NavType
             },
@@ -41,8 +41,12 @@ class ArticleRelationModel {
         });
     }
     static async findAll(data) {
-        let offset = data.pageSize * (data.currentPage - 1);
-        let limit = parseInt(data.pageSize);
+        // 优化1：参数验证和默认值，防止 offset 计算出错
+        const currentPage = Math.max(1, parseInt(data.currentPage) || 1);
+        const pageSize = Math.min(100, Math.max(1, parseInt(data.pageSize) || 10));
+        const offset = pageSize * (currentPage - 1);
+        const limit = pageSize;
+        
         let where = {};
         if (data.title) {
             where["title"] = {
@@ -58,9 +62,14 @@ class ArticleRelationModel {
         if (data.userId) {
             where["userId"] = data.userId
         }
+        // 优化2：改进时间范围查询，支持单独的开始或结束时间
         if (data.startTime || data.endTime) {
-            where["createdAt"] = {
-                [Op.between]: [new Date(data.startTime), new Date(data.endTime)]
+            where["createdAt"] = {};
+            if (data.startTime) {
+                where["createdAt"][Op.gte] = new Date(data.startTime);
+            }
+            if (data.endTime) {
+                where["createdAt"][Op.lte] = new Date(data.endTime);
             }
         }
         return await Blog.findAndCountAll({
@@ -92,24 +101,30 @@ class ArticleRelationModel {
         if (data.navTypeId) {
             where["navTypeId"]= data.navTypeId
         }
-        return await Blog.findAll({
+        // 优化3：使用 findOne 替代 findAll，聚合查询只返回一行
+        const result = await Blog.findOne({
             attributes: [
-                [Sequelize.fn('COUNT', Sequelize.col('navTypeId')), 'total']
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'total']
             ],
             where: where
         });
+        // 返回普通对象，处理可能的 null 值
+        return result ? result.get({ plain: true }) : { total: 0 };
     }
     static async findReplyTotal(data) {
         let where = {}
         if (data.navTypeId) {
             where["navTypeId"]= data.navTypeId
         }
-        return await Reply.findAll({
+        // 优化3：使用 findOne 替代 findAll
+        const result = await Reply.findOne({
             attributes: [
-                [Sequelize.fn('COUNT', Sequelize.col('navTypeId')), 'total']
+                [Sequelize.fn('COUNT', Sequelize.col('id')), 'total']
             ],
             where: where
         });
+        // 返回普通对象，处理可能的 null 值
+        return result ? result.get({ plain: true }) : { total: 0 };
     }
 
     static async findArticleVisitNum(data) {
@@ -117,12 +132,18 @@ class ArticleRelationModel {
         if (data.navTypeId) {
             where["navTypeId"]= data.navTypeId
         }
-        return await Blog.findAll({
+        // 优化3：使用 findOne 替代 findAll，并处理 SUM 可能返回 null 的情况
+        const result = await Blog.findOne({
             attributes: [
                 [Sequelize.fn('SUM', Sequelize.col('visitNum')), 'total']
             ],
             where: where,
         });
+        // SUM 在没有数据时返回 null，需要转为 0
+        const plainResult = result ? result.get({ plain: true }) : { total: 0 };
+        return {
+            total: plainResult.total || 0
+        };
     }
 
 }

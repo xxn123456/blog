@@ -1,5 +1,5 @@
 const replyModel = require("../../modules/blog/reply");
-const replyRelationUserWithArticleModel = require("../../modules/blog/replyRelationUserWithArticle")
+const replyRelationModel = require("../../modules/blog/replyRelation")
 const { HttpException } = require("../../middleware/httpException.js")
 class replyController {
     static async create(ctx) {
@@ -89,7 +89,7 @@ class replyController {
             if (!req.pageSize) {
                 req.pageSize = 10
             }
-            let data = await replyRelationUserWithArticleModel.finAllReply(req)
+            let data = await replyRelationModel.finAllReply(req)
             ctx.body = {
                 code: 200,
                 msg: '查找所有评论成功',

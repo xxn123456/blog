@@ -1,29 +1,63 @@
-const path = [
-    /^\/public\*/,
-    /^\/images/,
-    /^\/user\/regist/,
-    /^\/user\/login/,
-    /^\/navType\/findAll/,
-    /^\/blog\/findOne/,
-    /^\/blog\/findAll/,
-    /^\/blog\/updateSee/,
-    /^\/carousel\/findAll/,
-    /^\/webSet\/findAll/,
-    /^\/works\/findAll/,
-    /^\/works\/findOne/,
-    /^\/sdk\/queryAdcodeByIp/,
-    /^\/info\/findAll/,
-    /^\/info\/findOne/,
-    /^\/job\/findAll/,
-    /^\/job\/findOne/,
-    /^\/kill\/findAll/,
-    /^\/kill\/findOne/,
-    /^\/record\/findAll/,
-    /^\/record\/findOne/,
-    /^\/upload\/oss/,
-    /^\/health\/*/,
-    /^\/open\/*/,
-    /^\/wxApi\/*/
-]
+/**
+ * JWT 验证排除路径配置
+ * 这些路径不需要 JWT token 即可访问
+ */
 
-module.exports = path
+const JWT_EXCLUDE_PATHS = [
+  // ========== 静态资源 ==========
+  /^\/public(\/.*)?$/,        // 公共资源
+  /^\/images(\/.*)?$/,        // 图片资源
+  
+  // ========== 用户认证 ==========
+  /^\/user\/regist(\/.*)?$/,  // 用户注册
+  /^\/user\/login(\/.*)?$/,   // 用户登录
+  
+  // ========== 博客公开接口 ==========
+  /^\/navType\/findAll(\/.*)?$/,     // 导航类型列表
+  /^\/blog\/findOne(\/.*)?$/,        // 博客详情
+  /^\/blog\/findAll(\/.*)?$/,        // 博客列表
+  /^\/blog\/updateSee(\/.*)?$/,      // 更新浏览量
+  
+  // ========== 轮播图 ==========
+  /^\/carousel\/findAll(\/.*)?$/,    // 轮播图列表
+  
+  // ========== 网站设置 ==========
+  /^\/webSet\/findAll(\/.*)?$/,      // 网站配置
+  
+  // ========== 作品展示 ==========
+  /^\/works\/findAll(\/.*)?$/,       // 作品列表
+  /^\/works\/findOne(\/.*)?$/,       // 作品详情
+  
+  // ========== SDK 接口 ==========
+  /^\/sdk\/queryAdcodeByIp(\/.*)?$/, // IP 查询
+  
+  // ========== 信息类接口 ==========
+  /^\/info\/findAll(\/.*)?$/,        // 信息列表
+  /^\/info\/findOne(\/.*)?$/,        // 信息详情
+  
+  // ========== 职位类接口 ==========
+  /^\/job\/findAll(\/.*)?$/,         // 职位列表
+  /^\/job\/findOne(\/.*)?$/,         // 职位详情
+  
+  // ========== 秒杀类接口 ==========
+  /^\/kill\/findAll(\/.*)?$/,        // 秒杀列表
+  /^\/kill\/findOne(\/.*)?$/,        // 秒杀详情
+  
+  // ========== 记录类接口 ==========
+  /^\/record\/findAll(\/.*)?$/,      // 记录列表
+  /^\/record\/findOne(\/.*)?$/,      // 记录详情
+  
+  // ========== 上传接口 ==========
+  /^\/upload\/oss(\/.*)?$/,          // OSS 上传
+  
+  // ========== 健康检查 ==========
+  /^\/health(\/.*)?$/,               // 健康检查
+  
+  // ========== 开放接口 ==========
+  /^\/open(\/.*)?$/,                 // 开放 API
+  
+  // ========== 微信接口 ==========
+  /^\/wxApi(\/.*)?$/                 // 微信 API
+];
+
+module.exports = JWT_EXCLUDE_PATHS;

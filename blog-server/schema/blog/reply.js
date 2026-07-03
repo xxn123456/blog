@@ -21,6 +21,11 @@ module.exports = function(sequelize, DataTypes) {
             allowNull: false,
             field: 'user_id'
         },
+        navTypeId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: 'navTypeId'
+        },
         // 创建时间
         createdAt: {
             type: DataTypes.DATE,
